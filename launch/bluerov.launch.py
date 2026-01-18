@@ -1,5 +1,5 @@
 import os
-
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -7,6 +7,7 @@ from launch.actions import (
     LogInfo,
     RegisterEventHandler,
     OpaqueFunction,
+    ExecuteProcess,
 )
 from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
@@ -17,6 +18,19 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def launch_setup(context, *args, **kwargs):
+
+    pkg_multivehicle_sim = get_package_share_directory("multivehicle_sim")
+    pkg_orca_bringup = get_package_share_directory("orca_bringup")
+    ardusub_params_file = os.path.join(pkg_orca_bringup, "cfg", "sub.parm")
+    mavros_params_file = os.path.join(
+        pkg_orca_bringup, "params", "sim_mavros_params.yaml"
+    )
+    orca_params_file = os.path.join(pkg_orca_bringup, "params", "sim_orca_params.yaml")
+    rosbag2_record_qos_file = os.path.join(
+        pkg_orca_bringup, "params", "rosbag2_record_qos.yaml"
+    )
+    rviz_file = os.path.join(pkg_orca_bringup, "cfg", "sim_launch.rviz")
+
     paused = LaunchConfiguration("paused")
     gui = LaunchConfiguration("gui")
     use_sim_time = LaunchConfiguration("use_sim_time")
@@ -25,6 +39,10 @@ def launch_setup(context, *args, **kwargs):
     verbose = LaunchConfiguration("verbose")
     namespace = LaunchConfiguration("namespace")
     world_name = LaunchConfiguration("world_name")
+    launch_ardusub = LaunchConfiguration("ardusub")
+    launch_mavros = LaunchConfiguration("mavros")
+    launch_bag = LaunchConfiguration("bag")
+    launch_rviz = LaunchConfiguration("rviz")
 
     x = LaunchConfiguration("x")
     y = LaunchConfiguration("y")
@@ -51,6 +69,29 @@ def launch_setup(context, *args, **kwargs):
         gz_args.append(" -v ")
         gz_args.append(verbose.perform(context))
 
+    # Find lat lon to initiate ardusub with
+    # world_full_path = os.path.join(pkg_multivehicle_sim, "worlds", world_filename)
+
+    # Launch ArduSub w/ SIM_JSON
+    # -w: wipe eeprom
+    # --home: start location (lat,lon,alt,yaw). Yaw is provided by Gazebo, so the start yaw value is ignored.
+    # ardusub must be on the $PATH, see src/orca4/setup.bash
+    ardusub_launch = ExecuteProcess(
+        cmd=[
+            "ardusub",
+            "-S",
+            "-w",
+            "-M",
+            "JSON",
+            "--defaults",
+            ardusub_params_file,
+            "-I0",
+            "--home",
+            "33.810313,-118.39386700000001,0.0,0",
+        ],
+        output="screen",
+        condition=IfCondition(launch_ardusub),
+    )
     gz_sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
@@ -73,12 +114,11 @@ def launch_setup(context, *args, **kwargs):
         [
             FindPackageShare("multivehicle_sim"),
             "models",
-            "bluerov2_heavy",
+            "bluerov2",
             "model.sdf",
         ]
     )
 
-    # --- 6. Define the Spawner Node (From File 1) ---
     gz_spawner = Node(
         package="ros_gz_sim",
         executable="create",
@@ -112,14 +152,60 @@ def launch_setup(context, *args, **kwargs):
         )
     )
 
-    return [gz_sim_launch, gz_spawner, spawn_exit_handler]
+    orca_bringup_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_orca_bringup, "launch", "bringup.py")
+        ),
+        launch_arguments={
+            "base": LaunchConfiguration("base"),
+            "mavros": launch_mavros,
+            "mavros_params_file": mavros_params_file,
+            "nav": LaunchConfiguration("nav"),
+            "orca_params_file": orca_params_file,
+            "slam": LaunchConfiguration("slam"),
+        }.items(),
+    )
+    bag_process = ExecuteProcess(
+        cmd=[
+            "ros2",
+            "bag",
+            "record",
+            "--qos-profile-overrides-path",
+            rosbag2_record_qos_file,
+            "--include-hidden-topics",
+            "/cmd_vel",
+            "/mavros/state",
+            "/odom",
+            "/rosout",
+            "/tf",
+            "/tf_static",
+        ],
+        output="screen",
+        condition=IfCondition(launch_bag),
+    )
+
+    rviz_process = ExecuteProcess(
+        cmd=["rviz2", "-d", rviz_file],
+        output="screen",
+        condition=IfCondition(launch_rviz),
+    )
+
+    return [
+        gz_sim_launch,
+        gz_spawner,
+        spawn_exit_handler,
+        ardusub_launch,
+        orca_bringup_launch,
+        bag_process,
+        rviz_process,
+    ]
 
 
 def generate_launch_description():
     args = [
         DeclareLaunchArgument(
             "paused",
-            default_value="true",
+            default_value="false",
             description="Start the simulation paused",
         ),
         DeclareLaunchArgument(
@@ -187,6 +273,21 @@ def generate_launch_description():
             default_value="0.0",
             description="Initial yaw angle",
         ),
+        DeclareLaunchArgument(
+            "ardusub", default_value="true", description="Launch ArduSUB?"
+        ),
+        DeclareLaunchArgument("bag", default_value="False", description="Record bag?"),
+        DeclareLaunchArgument(
+            "base", default_value="true", description="Launch base controller?"
+        ),
+        DeclareLaunchArgument(
+            "mavros", default_value="true", description="Launch mavros?"
+        ),
+        DeclareLaunchArgument(
+            "nav", default_value="false", description="Launch navigation?"
+        ),
+        DeclareLaunchArgument("rviz", default_value="false", description="Launch rviz?"),
+        DeclareLaunchArgument("slam", default_value="false", description="Launch SLAM?"),
     ]
 
     return LaunchDescription(args + [OpaqueFunction(function=launch_setup)])

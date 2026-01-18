@@ -15,6 +15,7 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-
 # 3. Main Installation (Alphabetized & Consolidated)
 apt-get update && apt-get install -y --no-install-recommends \
     atop \
+    bash-completion \
     bc \
     build-essential \
     ca-certificates \
@@ -24,7 +25,9 @@ apt-get update && apt-get install -y --no-install-recommends \
     expect \
     gdb \
     git \
+    glmark2 \
     gnutls-bin \
+    gstreamer1.0-gl \
     gstreamer1.0-libav \
     gstreamer1.0-plugins-bad \
     gstreamer1.0-plugins-base \
@@ -36,17 +39,26 @@ apt-get update && apt-get install -y --no-install-recommends \
     libboost-all-dev \
     libccd-dev \
     libcwiid-dev \
+    libegl1 \
     libeigen3-dev \
     libfcl-dev \
     libgflags-dev \
     libgles2-mesa-dev \
+    libgl1 \
+    libglvnd0 \
+    libglx0 \
     libgoogle-glog-dev \
     libgstreamer-plugins-base1.0-dev \
+    libgstreamer1.0-dev \
+    libgz-sim8-dev \
     libimage-exiftool-perl \
+    libopencv-dev \
     libspnav-dev \
     libusb-dev \
+    libx11-6 \
     libxcb-cursor-dev \
     libxcb-xinerama0 \
+    libxext6 \
     libxkbcommon-x11-0 \
     libxml2-utils \
     lsb-release \
@@ -61,6 +73,8 @@ apt-get update && apt-get install -y --no-install-recommends \
     python3-setuptools \
     python3-vcstool \
     python3-venv \
+    python3-wxgtk4.0 \
+    rapidjson-dev \
     ros-humble-actuator-msgs \
     ros-humble-ament-cmake-pycodestyle \
     ros-humble-desktop \
@@ -80,11 +94,19 @@ apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-rviz2 \
     ros-humble-vision-msgs \
     ros-humble-xacro \
+    ros-humble-image-common \
+    ros-humble-image-transport \
+    ros-humble-mavros \
+    ros-humble-navigation2 \
+    ros-humble-nav2-bringup \
+    ros-humble-nav2-util \
+    ros-humble-nav2-common \
     ruby \
     software-properties-common \
     sudo \
     vim \
     wget \
+    xterm \
     xvfb
 
 # 4. Cleanup
