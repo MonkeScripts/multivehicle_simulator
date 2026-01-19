@@ -1,4 +1,5 @@
 import os
+import xml.etree.ElementTree as ET
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
@@ -59,6 +60,7 @@ def launch_setup(context, *args, **kwargs):
         )
         gz_args = [world_filepath]
     else:
+        world_filename = None
         gz_args = [world_name]
 
     if headless.perform(context) == "true":
@@ -69,8 +71,48 @@ def launch_setup(context, *args, **kwargs):
         gz_args.append(" -v ")
         gz_args.append(verbose.perform(context))
 
-    # Find lat lon to initiate ardusub with
-    # world_full_path = os.path.join(pkg_multivehicle_sim, "worlds", world_filename)
+    # Dynamically generate lat lon by parsing world xml file
+    home_lat = 33.810313
+    home_lon = -118.393867
+    home_alt = 0.0
+    home_heading = 0.0
+    if world_filename: 
+        world_full_path = os.path.join(pkg_multivehicle_sim, "worlds", world_filename)
+        if os.path.exists(world_full_path):
+            print(f"Parsing world file for coordinates: {world_full_path}")
+            try:
+                tree = ET.parse(world_full_path)
+                root = tree.getroot()
+                world_elem = root.find("world")
+                if world_elem is not None:
+                sc = world_elem.find("spherical_coordinates")
+                if sc is not None:
+                    # Extract text and convert to float
+                    lat_elem = sc.find("latitude_deg")
+                    if lat_elem is not None:
+                        home_lat = float(lat_elem.text)
+                    
+                    lon_elem = sc.find("longitude_deg")
+                    if lon_elem is not None:
+                        home_lon = float(lon_elem.text)
+                        
+                    elev_elem = sc.find("elevation")
+                    if elev_elem is not None:
+                        home_alt = float(elev_elem.text)
+                        
+                    head_elem = sc.find("heading_deg")
+                    if head_elem is not None:
+                        home_heading = float(head_elem.text)
+
+                print(f"[Launch] Found Coordinates: Lat={home_lat}, Lon={home_lon}")
+
+            except Exception as e:
+                print(f"XML Parsing failed: {e}. Using defaults.")
+        else:
+            print("World path not found or empty. Using default coordinates.")
+
+    # Create the string for ArduSub: "Lat,Lon,Alt,Yaw"
+    home_str = f"{home_lat},{home_lon},{home_alt},{home_heading}"
 
     # Launch ArduSub w/ SIM_JSON
     # -w: wipe eeprom
@@ -87,7 +129,7 @@ def launch_setup(context, *args, **kwargs):
             ardusub_params_file,
             "-I0",
             "--home",
-            "33.810313,-118.39386700000001,0.0,0",
+            home_str,,
         ],
         output="screen",
         condition=IfCondition(launch_ardusub),
