@@ -85,24 +85,24 @@ def launch_setup(context, *args, **kwargs):
                 root = tree.getroot()
                 world_elem = root.find("world")
                 if world_elem is not None:
-                sc = world_elem.find("spherical_coordinates")
-                if sc is not None:
-                    # Extract text and convert to float
-                    lat_elem = sc.find("latitude_deg")
-                    if lat_elem is not None:
-                        home_lat = float(lat_elem.text)
-                    
-                    lon_elem = sc.find("longitude_deg")
-                    if lon_elem is not None:
-                        home_lon = float(lon_elem.text)
+                    sc = world_elem.find("spherical_coordinates")
+                    if sc is not None:
+                        # Extract text and convert to float
+                        lat_elem = sc.find("latitude_deg")
+                        if lat_elem is not None:
+                            home_lat = float(lat_elem.text)
                         
-                    elev_elem = sc.find("elevation")
-                    if elev_elem is not None:
-                        home_alt = float(elev_elem.text)
-                        
-                    head_elem = sc.find("heading_deg")
-                    if head_elem is not None:
-                        home_heading = float(head_elem.text)
+                        lon_elem = sc.find("longitude_deg")
+                        if lon_elem is not None:
+                            home_lon = float(lon_elem.text)
+                            
+                        elev_elem = sc.find("elevation")
+                        if elev_elem is not None:
+                            home_alt = float(elev_elem.text)
+                            
+                        head_elem = sc.find("heading_deg")
+                        if head_elem is not None:
+                            home_heading = float(head_elem.text)
 
                 print(f"[Launch] Found Coordinates: Lat={home_lat}, Lon={home_lon}")
 
@@ -129,7 +129,7 @@ def launch_setup(context, *args, **kwargs):
             ardusub_params_file,
             "-I0",
             "--home",
-            home_str,,
+            home_str
         ],
         output="screen",
         condition=IfCondition(launch_ardusub),
