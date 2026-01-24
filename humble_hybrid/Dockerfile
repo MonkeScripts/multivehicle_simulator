@@ -76,6 +76,4 @@ RUN [ "/bin/bash" , "-c" , "\
 ENV GZ_SIM_RESOURCE_PATH=${PX4_DIR}/PX4-Autopilot/Tools/simulation/gz/models
 ENV GZ_SIM_SERVER_CONFIG_PATH=${PX4_DIR}/PX4-Autopilot/Tools/simulation/gz/server.config
 ENV GZ_SIM_SYSTEM_PLUGIN_PATH=${ARDUSUB_DIR}/ardupilot_gazebo/build
-ENV PATH="${ARDUSUB_DIR}/ardupilot/Tools/autotest:${PATH}"
-ENV PATH="${ARDUSUB_DIR}/ardupilot/.local/bin:${PATH}"
-ENV PATH="${ARDUSUB_DIR}/ardupilot/build/sitl/bin:${PATH}"
+ENV PATH="${ARDUSUB_DIR}/ardupilot/build/sitl/bin:${ARDUSUB_DIR}/ardupilot/Tools/autotest:/root/.local/bin:${PATH}"
