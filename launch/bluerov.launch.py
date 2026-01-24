@@ -76,7 +76,7 @@ def launch_setup(context, *args, **kwargs):
     home_lon = -118.393867
     home_alt = 0.0
     home_heading = 0.0
-    if world_filename: 
+    if world_filename:
         world_full_path = os.path.join(pkg_multivehicle_sim, "worlds", world_filename)
         if os.path.exists(world_full_path):
             print(f"Parsing world file for coordinates: {world_full_path}")
@@ -91,15 +91,15 @@ def launch_setup(context, *args, **kwargs):
                         lat_elem = sc.find("latitude_deg")
                         if lat_elem is not None:
                             home_lat = float(lat_elem.text)
-                        
+
                         lon_elem = sc.find("longitude_deg")
                         if lon_elem is not None:
                             home_lon = float(lon_elem.text)
-                            
+
                         elev_elem = sc.find("elevation")
                         if elev_elem is not None:
                             home_alt = float(elev_elem.text)
-                            
+
                         head_elem = sc.find("heading_deg")
                         if head_elem is not None:
                             home_heading = float(head_elem.text)
@@ -129,7 +129,7 @@ def launch_setup(context, *args, **kwargs):
             ardusub_params_file,
             "-I0",
             "--home",
-            home_str
+            home_str,
         ],
         output="screen",
         condition=IfCondition(launch_ardusub),
@@ -328,8 +328,12 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "nav", default_value="false", description="Launch navigation?"
         ),
-        DeclareLaunchArgument("rviz", default_value="false", description="Launch rviz?"),
-        DeclareLaunchArgument("slam", default_value="false", description="Launch SLAM?"),
+        DeclareLaunchArgument(
+            "rviz", default_value="false", description="Launch rviz?"
+        ),
+        DeclareLaunchArgument(
+            "slam", default_value="false", description="Launch SLAM?"
+        ),
     ]
 
     return LaunchDescription(args + [OpaqueFunction(function=launch_setup)])
