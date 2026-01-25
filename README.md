@@ -1,29 +1,37 @@
 # Multivehicle Simulator
 This package provides a simulation environment for multiple vehicles (PX4, Ardusub, USV) using ROS 2 and Gazebo Harmonic. It includes launch files, configuration files, and models to facilitate the simulation of various types of vehicles.
 
-# -- Documentation -- WIP, not complete
-
 ## Setting up the environment
 The simulation uses rocker to setup a dockerized environment with all the necessary dependencies. To get started, follow these steps:
 1. Install Docker
-2. Setup a python virtual environment and install rocker:
+2. In your colcon workspace, clone this repository:
+    ```bash
+    mkdir -p ~/colcon_ws/src
+    cd ~/colcon_ws/src
+    git clone https://github.com/MonkeScripts/multivehicle_simulator.git
+    ```
+3. Setup a python virtual environment and install rocker:
     ```bash
     python3 -m venv multivehicle_venv
     source multivehicle_venv/bin/activate
     ```
-3. Install [rocker](https://github.com/osrf/rocker):
+4. Install [rocker](https://github.com/osrf/rocker):
     ```bash
-    ```bash
+    git clone https://github.com/osrf/rocker.git
     python3 -m pip install rocker/.
     ```
-4. Build the rocker image with the required dependencies:
+5. Build the rocker image with the required dependencies:
     ```bash
     ./build.bash humble_hybrid
     ```
-5. To run the rocker container, run:
+6. To run the rocker container, run:
     ```bash
      ./run.bash dockwater:humble_hybrid
     ```
+    The px4 build would be found in `/root/px4/` inside the container.
+    The ardusub build would be found in `/root/auv/` inside the container.
+    All files would be mounted to /home/HOST/ inside the container.
+
 ## Launching the simulation
 ### Launching the bluerov simulation
 Once inside the rocker container, you can launch the multivehicle simulation using the provided launch files. For example, to launch a simulation with a BlueROV2 vehicle, run:
