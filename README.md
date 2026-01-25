@@ -73,6 +73,12 @@ def get_docker_args(self, cliargs):
 ```
 The simulation should now run without the MESA ZINK error.
 
+Rebuild the package to apply the changes. Run the following command from the root of the repository to install the package in editable mode:
+
+```bash
+pip install -e .
+```
+
 ### [ros_gz_sim]: Requesting list of world names.
 When using the `ros_gz_sim` package, you may encounter an issue when requesting the list of world names. This happens because gazebo is trying to download some models from Gazebo Fuel.
 
