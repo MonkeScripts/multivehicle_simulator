@@ -1,0 +1,200 @@
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    LogInfo,
+    RegisterEventHandler,
+    OpaqueFunction,
+    ExecuteProcess,
+)
+from launch.conditions import IfCondition
+from launch.event_handlers import OnProcessExit
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
+
+
+def launch_setup(context, *args, **kwargs):
+
+    pkg_multivehicle_sim = get_package_share_directory("multivehicle_sim")
+
+    paused = LaunchConfiguration("paused")
+    gui = LaunchConfiguration("gui")
+    use_sim_time = LaunchConfiguration("use_sim_time")
+    debug = LaunchConfiguration("debug")
+    headless = LaunchConfiguration("headless")
+    verbose = LaunchConfiguration("verbose")
+    namespace = LaunchConfiguration("namespace")
+    world_name = LaunchConfiguration("world_name")
+
+    x = LaunchConfiguration("x")
+    y = LaunchConfiguration("y")
+    z = LaunchConfiguration("z")
+    roll = LaunchConfiguration("roll")
+    pitch = LaunchConfiguration("pitch")
+    yaw = LaunchConfiguration("yaw")
+
+    if world_name.perform(context) != "empty.sdf":
+        w_name = world_name.perform(context)
+        world_filename = f"{w_name}.world"
+        world_filepath = PathJoinSubstitution(
+            [FindPackageShare("multivehicle_sim"), "worlds", world_filename]
+        )
+        gz_args = [world_filepath]
+    else:
+        world_filename = None
+        gz_args = [world_name]
+
+    if headless.perform(context) == "true":
+        gz_args.append(" -s")
+    if paused.perform(context) == "false":
+        gz_args.append(" -r")
+    if debug.perform(context) == "true":
+        gz_args.append(" -v ")
+        gz_args.append(verbose.perform(context))
+
+    gz_sim_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [
+                PathJoinSubstitution(
+                    [
+                        FindPackageShare("ros_gz_sim"),
+                        "launch",
+                        "gz_sim.launch.py",
+                    ]
+                )
+            ]
+        ),
+        launch_arguments=[
+            ("gz_args", gz_args),
+        ],
+        condition=IfCondition(gui),
+    )
+
+    description_file = PathJoinSubstitution(
+        [
+            FindPackageShare("multivehicle_sim"),
+            "models",
+            "blueboat",
+            "model.sdf",
+        ]
+    )
+
+    gz_spawner = Node(
+        package="ros_gz_sim",
+        executable="create",
+        arguments=[
+            "-name",
+            namespace,
+            "-file",
+            description_file,
+            "-x",
+            x,
+            "-y",
+            y,
+            "-z",
+            z,
+            "-R",
+            roll,
+            "-P",
+            pitch,
+            "-Y",
+            yaw,
+        ],
+        output="both",
+        condition=IfCondition(gui),
+        parameters=[{"use_sim_time": use_sim_time}],
+    )
+
+    spawn_exit_handler = RegisterEventHandler(
+        OnProcessExit(
+            target_action=gz_spawner,
+            on_exit=LogInfo(msg="Robot Model Spawn Process Finished"),
+        )
+    )
+
+    return [
+        gz_sim_launch,
+        gz_spawner,
+        spawn_exit_handler,
+    ]
+
+
+def generate_launch_description():
+    args = [
+        DeclareLaunchArgument(
+            "paused",
+            default_value="false",
+            description="Start the simulation paused",
+        ),
+        DeclareLaunchArgument(
+            "gui",
+            default_value="true",
+            description="Flag to enable the gazebo gui",
+        ),
+        DeclareLaunchArgument(
+            "use_sim_time",
+            default_value="true",
+            description="Flag to indicate whether to use simulation time",
+        ),
+        DeclareLaunchArgument(
+            "debug",
+            default_value="false",
+            description="Flag to enable the gazebo debug flag",
+        ),
+        DeclareLaunchArgument(
+            "headless",
+            default_value="false",
+            description="Flag to enable the gazebo headless mode",
+        ),
+        DeclareLaunchArgument(
+            "verbose",
+            default_value="0",
+            description="Adjust level of console verbosity",
+        ),
+        DeclareLaunchArgument(
+            "world_name",
+            default_value="empty.sdf",
+            description="Gazebo world file to launch",
+        ),
+        DeclareLaunchArgument(
+            "namespace",
+            default_value="blueboat",
+            description="Namespace",
+        ),
+        DeclareLaunchArgument(
+            "x",
+            default_value="0.0",
+            description="Initial x position",
+        ),
+        DeclareLaunchArgument(
+            "y",
+            default_value="0.0",
+            description="Initial y position",
+        ),
+        DeclareLaunchArgument(
+            "z",
+            default_value="0.0",
+            description="Initial z position",
+        ),
+        DeclareLaunchArgument(
+            "roll",
+            default_value="0.0",
+            description="Initial roll angle",
+        ),
+        DeclareLaunchArgument(
+            "pitch",
+            default_value="0.0",
+            description="Initial pitch angle",
+        ),
+        DeclareLaunchArgument(
+            "yaw",
+            default_value="0.0",
+            description="Initial yaw angle",
+        ),
+    ]
+
+    return LaunchDescription(args + [OpaqueFunction(function=launch_setup)])
