@@ -50,6 +50,7 @@ ros2 launch multivehicle_simulator bluerov.launch.py world_name:=nbpark
 ```
 This will start Gazebo with the BlueROV2 model in Nathan Benderson park. You can open QGC to connect to the vehicle using the appropriate UDP port (14550).
 ### Adding the PX4 drone
+> Note: The setup and scripts are adapted from https://github.com/Dronecode/roscon-25-workshop/tree/main. For more comprehensive applications of drone simulation with ROS 2 and Gazebo, please refer to the original repository.
 To add a PX4 drone to the simulation, run the following command in a new terminal inside the rocker container:
 ```bash
 PX4_GZ_STANDALONE=1 PX4_SYS_AUTOSTART=4001 PX4_PARAM_UXRCE_DDS_SYNCT=0 PX4_GZ_MODEL_POSE="-108.860000,603.150000,0.8,0,0.0" /root/px4/px4_sitl/bin/px4 -w /root/px4/px4_sitl/romfs -i 1
