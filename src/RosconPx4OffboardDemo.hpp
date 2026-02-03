@@ -35,7 +35,6 @@ class OffboardDemo : public rclcpp::Node {
     void switchToOffboard();
     void disarm();
     void land();
-    void loadParameters();
     bool headingReached(float target_heading) const;
 
     enum class State {
@@ -71,6 +70,10 @@ class OffboardDemo : public rclcpp::Node {
     bool _land_detected = false;
 
     // Parameters
+    std::string _topic_prefix;
+    std::string _vehicle_namespace;
+    int _vehicle_id;
+
     float _takeoff_altitude;
     float _hover_duration;
 };

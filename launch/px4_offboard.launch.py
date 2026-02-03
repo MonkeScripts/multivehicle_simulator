@@ -26,7 +26,11 @@ def generate_launch_description():
                 executable="px4_offboard_demo",
                 name="px4_offboard_demo",
                 output="screen",
-                parameters=[{"use_sim_time": True}, {"takeoff_altitude": 3.0}],
+                parameters=[
+                    {"use_sim_time": True},
+                    {"vehicle_namespace": "px4_1"},
+                    {"vehicle_id": 2},
+                ],
             ),
         ]
     )
