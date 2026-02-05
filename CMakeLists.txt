@@ -25,7 +25,7 @@ target_compile_features(px4_offboard_demo  PUBLIC c_std_99 cxx_std_17)
 install(TARGETS px4_offboard_demo  DESTINATION lib/${PROJECT_NAME})
 
 install(
-  DIRECTORY launch config
+  DIRECTORY launch config mavros_params
   DESTINATION share/${PROJECT_NAME}
 )
 if(BUILD_TESTING)
