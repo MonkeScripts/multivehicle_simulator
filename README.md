@@ -49,6 +49,15 @@ Once inside the rocker container, you can launch the multivehicle simulation usi
 ros2 launch multivehicle_simulator bluerov.launch.py world_name:=nbpark
 ```
 This will start Gazebo with the BlueROV2 model in Nathan Benderson park. You can open QGC to connect to the vehicle using the appropriate UDP port (14550).
+
+### Running bluerov mission
+>Note: Ensure that QGC is running and connected to the Ardusub vehicle before executing the mission demo.
+A simple state machine mission is provided to demonstrate autonomous movement of the BlueROV2 in the simulation. To run the mission, use the following command:
+```bash
+ros2 launch multivehicle_simulator bluerov_mission.launch.py
+```
+This will command the BlueROV2 to dive to a depth of 2 meters and move in a square pattern. During each leg of the square, the vehicle would also yaw to head in the direction of the next waypoint.
+
 ### Adding the PX4 drone
 > Note: The setup and scripts are adapted from https://github.com/Dronecode/roscon-25-workshop/tree/main. For more comprehensive applications of drone simulation with ROS 2 and Gazebo, please refer to the original repository.
 To add a PX4 drone to the simulation, run the following command in a new terminal inside the rocker container:
@@ -82,6 +91,8 @@ You should now see the default PX4 airframe in the Gazebo simulation environment
     - `vehicle_id`: The instance ID of the PX4 vehicle (should match the ID used when launching PX4, e.g., `1`). This index is indexed from 1, so if you used `-i 1` when launching PX4, set this parameter to `2`.
 
 This will start the offboard control demo, which commands the PX4 vehicle to take off, hover, and land autonomously.
+
+
 
 ## Issues and fixes
 ### MESA: error: ZINK: vkCreateInstance failed (VK_ERROR_INCOMPATIBLE_DRIVER)
@@ -126,6 +137,8 @@ Depending on the world, sometimes the models do not have any collision geometry 
 
 #### Possible fix
 To fix this issue, you can pre-download the necessary models and worlds from Gazebo Fuel before launching your simulation. This way, Gazebo won't need to download them during runtime, which should resolve the hanging issue.
+The Nathan Benderson Park is already downloaded in the `multivehicle_simulator` package under `worlds/nathan_benderson_park`. However, if you want to download other models or worlds, you can follow the steps for the Nathan Benderson Park as an example:
+
 Example with Nathan Benderson Park world:
 1. Download the zipped model from this [website](https://app.gazebosim.org/OpenRobotics/fuel/models/nathan_benderson_park). You might need to create a free account to access the download.
 2. Unzip the downloaded file.
