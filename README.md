@@ -52,6 +52,7 @@ This will start Gazebo with the BlueROV2 model in Nathan Benderson park. You can
 
 ### Running bluerov mission
 >Note: Ensure that QGC is running and connected to the Ardusub vehicle before executing the mission demo.
+
 A simple state machine mission is provided to demonstrate autonomous movement of the BlueROV2 in the simulation. To run the mission, use the following command:
 ```bash
 ros2 launch multivehicle_simulator bluerov_mission.launch.py
