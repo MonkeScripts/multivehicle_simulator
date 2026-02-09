@@ -77,6 +77,14 @@
       <mQabsQ>-3.992</mQabsQ>
       <nRabsR>-3.992</nRabsR>
     </plugin>
+    
+    <plugin
+      filename="gz-sim-odometry-publisher-system"
+      name="gz::sim::systems::OdometryPublisher">
+      <odom_frame>odom</odom_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+      <dimensions>3</dimensions>
+    </plugin>
 
     <link name="thruster1">
       <pose>0.14 -0.092 0.0 -1.571 1.571 -0.785</pose>

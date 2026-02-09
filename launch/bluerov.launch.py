@@ -25,6 +25,9 @@ def launch_setup(context, *args, **kwargs):
     mavros_params_file = os.path.join(
         pkg_multivehicle_sim, "mavros_params", "sim_mavros_params.yaml"
     )
+    bluerov_gz_bridge_config_file = os.path.join(
+        pkg_multivehicle_sim, "config", "bluerov_gz_bridge.yaml"
+    )
 
     paused = LaunchConfiguration("paused")
     gui = LaunchConfiguration("gui")
@@ -197,12 +200,20 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(launch_mavros),
     )
 
+    gz_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        name="gz_clock_bridge",
+        parameters=[{"config_file": bluerov_gz_bridge_config_file}],
+    )
+
     return [
         gz_sim_launch,
         gz_spawner,
         spawn_exit_handler,
         mavros_node,
         ardusub_launch,
+        gz_bridge,
     ]
 
 
