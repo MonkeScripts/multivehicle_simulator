@@ -97,6 +97,7 @@ apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-image-common \
     ros-humble-image-transport \
     ros-humble-mavros \
+    ros-humble-mavros-extras \
     ros-humble-navigation2 \
     ros-humble-nav2-bringup \
     ros-humble-nav2-util \

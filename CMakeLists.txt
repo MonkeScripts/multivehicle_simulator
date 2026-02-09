@@ -33,6 +33,7 @@ ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
   scripts/ground_truth_to_mavros.py
+  scripts/bluerov_movement.py
   DESTINATION lib/${PROJECT_NAME}
 )
 if(BUILD_TESTING)
