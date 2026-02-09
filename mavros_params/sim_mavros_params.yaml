@@ -39,7 +39,7 @@ mavros/local_position:
   ros__parameters:
     frame_id: "map"  # frame_id of /mavros/local_position/pose, etc.
     tf:
-      send: false  # Do not publish tf
+      send: true  # Do not publish tf
 
 mavros/vision_pose:
   ros__parameters:
