@@ -31,12 +31,11 @@ class BlueROVSquareMission(Node):
         self.services_initialized = False
 
         # Mission Params
-        self.side_length = 5.0
         self.depth = -2.0
         self.dist_threshold = 0.2
         self.yaw_threshold = 0.1
 
-        # State & Waypoints (X, Y)
+        # State & Waypoints in FLU
         self.current_pose = None
         self.state = "INIT"
         self.waypoints = [
@@ -47,7 +46,8 @@ class BlueROVSquareMission(Node):
         ]
         self.wp_index = 0
 
-        # Single timer for everything (10Hz)
+        # IMPORTANT NOTE: DO NOT SET A HIGH SETPOINT PUBLISH RATE.
+        # ROV WOULD KEEP REPLANNING ITS TRAJECTORY, CAUSING IT TO MOVE VERY SLOWLY
         self.timer = self.create_timer(1.0, self.main_loop)
 
     def arm(self):
