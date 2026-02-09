@@ -1,4 +1,4 @@
-- ros_topic_name: /odom   # <--- ROS side name
+- ros_topic_name: /bluerov/odom   # <--- ROS side name
   gz_topic_name: /model/bluerov/odometry # <--- Gazebo side name
   ros_type_name: nav_msgs/msg/Odometry
   gz_type_name: gz.msgs.Odometry
