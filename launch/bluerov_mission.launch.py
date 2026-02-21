@@ -47,6 +47,6 @@ def generate_launch_description():
             use_dvl_arg,
             ground_truth_node,
             dvl_node,
-            # movement_node,
+            movement_node,
         ]
     )

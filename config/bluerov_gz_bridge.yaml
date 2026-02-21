@@ -3,9 +3,3 @@
   ros_type_name: nav_msgs/msg/Odometry
   gz_type_name: gz.msgs.Odometry
   direction: "GZ_TO_ROS"
-
-# - ros_topic_name: /bluerov/dvl/velocity   # <--- ROS side name
-#   gz_topic_name: /model/bluerov/dvl/velocity # <--- Gazebo side name
-#   ros_type_name: dvl_msgs/msg/DVL
-#   gz_type_name: gz.msgs.DVL
-#   direction: "GZ_TO_ROS"
