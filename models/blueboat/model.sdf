@@ -21,18 +21,18 @@
         </geometry>
       </collision>
       <collision name="pontoon_port_collision">
-        <pose>0 0.295 0.008 0 0 0</pose>
+        <pose>-0.05 0.295 0.138 0 0 0</pose>
         <geometry>
           <box>
-            <size>1.2 0.15 0.18</size>
+            <size>1.2 0.20 0.40</size>
           </box>
         </geometry>
       </collision>
       <collision name="pontoon_stbd_collision">
-        <pose>0 -0.295 0.008 0 0 0</pose>
+        <pose>-0.05 -0.295 0.138 0 0 0</pose>
         <geometry>
           <box>
-            <size>1.2 0.15 0.18</size>
+            <size>1.2 0.20 0.40</size>
           </box>
         </geometry>
       </collision>
@@ -413,8 +413,8 @@
       <xUabsU>-58.42</xUabsU>
       <yVabsV>-55.137</yVabsV>
       <zWabsW>-50.0</zWabsW>
-      <kPabsP>-50</kPabsP>
-      <mQabsQ>-50</mQabsQ>
+      <kPabsP>-30</kPabsP>
+      <mQabsQ>-30</mQabsQ>
       <nRabsR>-50</nRabsR>
     </plugin>
 
