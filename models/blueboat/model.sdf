@@ -20,6 +20,22 @@
           </mesh>
         </geometry>
       </collision>
+      <collision name="pontoon_port_collision">
+        <pose>0 0.295 0.008 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>1.2 0.15 0.18</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="pontoon_stbd_collision">
+        <pose>0 -0.295 0.008 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>1.2 0.15 0.18</size>
+          </box>
+        </geometry>
+      </collision>
       <visual name="hull_visual">
         <geometry>
           <mesh>
@@ -397,8 +413,8 @@
       <xUabsU>-58.42</xUabsU>
       <yVabsV>-55.137</yVabsV>
       <zWabsW>-50.0</zWabsW>
-      <kPabsP>0</kPabsP>
-      <mQabsQ>0</mQabsQ>
+      <kPabsP>-50</kPabsP>
+      <mQabsQ>-50</mQabsQ>
       <nRabsR>-50</nRabsR>
     </plugin>
 
