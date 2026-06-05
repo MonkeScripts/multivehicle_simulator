@@ -134,67 +134,10 @@ This will start the offboard control demo, which commands the PX4 vehicle to tak
 
 
 ## Issues and fixes
-### MESA: error: ZINK: vkCreateInstance failed (VK_ERROR_INCOMPATIBLE_DRIVER)
->Note that this issue is tested with the outdated fork of rocker from IOES LAB. If you are using the official rocker repository, the issue might not be present.
-
-When running the simulation inside the rocker container, you might encounter the following error related to MESA and ZINK:
-```MESA: error: ZINK: vkCreateInstance failed (VK_ERROR_INCOMPATIBLE_DRIVER)```
-This error indicates that the Vulkan driver is not compatible with the ZINK driver being used by MESA. This can happen if the host system's graphics drivers do not support Vulkan or if there is a mismatch between the host and container graphics configurations. As such I changed the Nvidia options in rocker to use `--gpus all` on top of `--runtime=nvidia`.
-#### Fix
-Edit the get_docker_args function in `rocker/src/rocker/nvidia_extension.py` to the following:
-```python
-def get_docker_args(self, cliargs):
-    force_flag = cliargs.get('nvidia', None)
-    print(f"FORCE_FLAG: {force_flag}")
-
-    # MODIFIED: Added --gpus all to ensure visibility
-    if force_flag == 'runtime':
-        return "  --runtime=nvidia" 
-    if force_flag == 'gpus':
-        return "  --gpus all --runtime=nvidia"
-    if get_docker_version() >= Version("19.03"):
-        return "  --gpus all --runtime=nvidia"
-    
-    return " --gpus all --runtime=nvidia"
-```
-The simulation should now run without the MESA ZINK error.
-
-Rebuild the package to apply the changes. Run the following command from the root of the repository to install the package in editable mode:
-
-```bash
-pip install -e .
-```
-
 ### [ros_gz_sim]: Requesting list of world names.
 When using the `ros_gz_sim` package, you may encounter an issue when requesting the list of world names. This happens because gazebo is trying to render the world before it has fully loaded all the necessary assets. 
 
-One possibility would be that gazebo is downloading some models from Gazebo Fuel, an online database of models and worlds. When you launch a world that references an asset you don't have locally, Gazebo tries to download it on the fly. Depending on your internet connection and the size of the high-res textures, this can make the initial load feel like it's hanging.
+This most likely happens because gazebo is downloading the Singapore river model from Gazebo Fuel, an online database of models and worlds.  Depending on your internet connection and the size of the high-res textures, this can make the initial load feel like it's hanging.
 
 > Note that we only incur this penalty once. Once a model is downloaded, it is cached in your local folder (usually ~/.gz/fuel or ~/.ignition/fuel). Subsequent loads should be near-instant.
 
-Depending on the world, sometimes the models do not have any collision geometry enabled, which makes it difficult to add vehicles without them falling through the ground.
-
-#### Possible fix
-To fix this issue, you can pre-download the necessary models and worlds from Gazebo Fuel before launching your simulation. This way, Gazebo won't need to download them during runtime, which should resolve the hanging issue.
-The RobotX 2026 Singapore River course models are already included in the `multivehicle_simulator` package under `models/robotx26` (the `robotx_2026_sg_river.world` still pulls a couple of large environment assets — the Singapore River terrain and Coast Water — from Gazebo Fuel on first launch). If you want to download other models or worlds and use them locally, you can follow these steps:
-
-Example: caching a Fuel model locally
-1. Download the zipped model from its Gazebo Fuel page (e.g. the [Singapore River course](https://app.gazebosim.org/monkescripts/fuel/models)). You might need to create a free account to access the download.
-2. Unzip the downloaded file.
-3. Move the unzipped folder to the `models` directory.
-4. Reference the local copy in your world file instead of the Fuel URL:
-```xml
-    <include>
-      <pose>0 0 -1 0 0 0</pose>
-      <uri>model://robotx26/sg_river_course</uri>
-    </include>
-
-
-    <!-- Configuration that downloads the model from Fuel at runtime instead -->
-    <!-- <include>
-      <pose>0 0 -1 0 0 0</pose>
-      <uri>https://fuel.gazebosim.org/1.0/monkescripts/models/Singapore River (Cropped out for Robot X 2026)</uri>
-    </include> -->
-```
-5. Build and launch your simulation again. Gazebo should now load the world without hanging.
-> One benefit of this approach is that you can also ****modify the models locally if needed, such as enabling collision geometry or adjusting textures**.
