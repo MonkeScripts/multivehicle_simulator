@@ -18,23 +18,22 @@
 #
 
 # Builds a Docker image.
-image_name=dockwater
-distro=$(basename $1)
+# Usage: ./build.bash [dockerfile_dir] [tag]
+#   dockerfile_dir  directory containing the Dockerfile (default: mvsim)
+#   tag             image tag (default: humble)
+# Produces  mvsim:<tag>  and  mvsim:<timestamp>.
+image_name=mvsim
+dockerfile_dir=${1:-mvsim}
+distro=${2:-humble}
 
-if [ $# -lt 1 ]
+if [ ! -f "${dockerfile_dir}"/Dockerfile ]
 then
-    echo "Usage: $0 <path to directory containing Dockerfile>"
-    exit 1
-fi
-
-if [ ! -f "${1}"/Dockerfile ]
-then
-    echo "Err: Directory does not contain a Dockerfile to build."
+    echo "Err: Directory '${dockerfile_dir}' does not contain a Dockerfile to build."
     exit 1
 fi
 
 image_plus_tag=$image_name:$(export LC_ALL=C; date +%Y_%m_%d_%H%M)
-docker build --rm -t $image_plus_tag -f "${1}"/Dockerfile "${1}" && \
+docker build --rm -t $image_plus_tag -f "${dockerfile_dir}"/Dockerfile "${dockerfile_dir}" && \
 docker tag $image_plus_tag $image_name:$distro && \
 echo "Built $image_plus_tag and tagged as $image_name:$distro"
 echo "To run:"

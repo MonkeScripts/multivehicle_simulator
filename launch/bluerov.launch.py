@@ -1,10 +1,10 @@
 import os
 import xml.etree.ElementTree as ET
+
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
-    IncludeLaunchDescription,
     LogInfo,
     RegisterEventHandler,
     OpaqueFunction,
@@ -12,13 +12,19 @@ from launch.actions import (
 )
 from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
 def launch_setup(context, *args, **kwargs):
+    """Spawn the BlueROV2 into an already-running Gazebo world.
+
+    The world itself is started separately by ``world.launch.py``. Here we only
+    spawn the vehicle and bring up its support nodes (ArduSub, MAVROS, the
+    ROS<->gz bridge). The world file is still read to derive the ArduSub home
+    lat/lon from its <spherical_coordinates>.
+    """
 
     pkg_multivehicle_sim = get_package_share_directory("multivehicle_sim")
     ardusub_params_file = os.path.join(pkg_multivehicle_sim, "config", "ardusub.parm")
@@ -29,12 +35,7 @@ def launch_setup(context, *args, **kwargs):
         pkg_multivehicle_sim, "config", "bluerov_gz_bridge.yaml"
     )
 
-    paused = LaunchConfiguration("paused")
-    gui = LaunchConfiguration("gui")
     use_sim_time = LaunchConfiguration("use_sim_time")
-    debug = LaunchConfiguration("debug")
-    headless = LaunchConfiguration("headless")
-    verbose = LaunchConfiguration("verbose")
     namespace = LaunchConfiguration("namespace")
     world_name = LaunchConfiguration("world_name")
     launch_ardusub = LaunchConfiguration("ardusub")
@@ -47,32 +48,15 @@ def launch_setup(context, *args, **kwargs):
     pitch = LaunchConfiguration("pitch")
     yaw = LaunchConfiguration("yaw")
 
-    if world_name.perform(context) != "empty.sdf":
-        w_name = world_name.perform(context)
-        world_filename = f"{w_name}.world"
-        world_filepath = PathJoinSubstitution(
-            [FindPackageShare("multivehicle_sim"), "worlds", world_filename]
-        )
-        gz_args = [world_filepath]
-    else:
-        world_filename = None
-        gz_args = [world_name]
-
-    if headless.perform(context) == "true":
-        gz_args.append(" -s")
-    if paused.perform(context) == "false":
-        gz_args.append(" -r")
-    if debug.perform(context) == "true":
-        gz_args.append(" -v ")
-        gz_args.append(verbose.perform(context))
-
-    # Dynamically generate lat lon by parsing world xml file
+    # Derive the ArduSub home (lat,lon,alt,heading) by parsing the same world
+    # file world.launch.py loads. The world is NOT started here.
     home_lat = 33.810313
     home_lon = -118.393867
     home_alt = 0.0
     home_heading = 0.0
-    if world_filename:
-        world_full_path = os.path.join(pkg_multivehicle_sim, "worlds", world_filename)
+    w_name = world_name.perform(context)
+    if w_name != "empty.sdf":
+        world_full_path = os.path.join(pkg_multivehicle_sim, "worlds", f"{w_name}.world")
         if os.path.exists(world_full_path):
             print(f"Parsing world file for coordinates: {world_full_path}")
             try:
@@ -82,7 +66,6 @@ def launch_setup(context, *args, **kwargs):
                 if world_elem is not None:
                     sc = world_elem.find("spherical_coordinates")
                     if sc is not None:
-                        # Extract text and convert to float
                         lat_elem = sc.find("latitude_deg")
                         if lat_elem is not None:
                             home_lat = float(lat_elem.text)
@@ -112,7 +95,7 @@ def launch_setup(context, *args, **kwargs):
     # Launch ArduSub w/ SIM_JSON
     # -w: wipe eeprom
     # --home: start location (lat,lon,alt,yaw). Yaw is provided by Gazebo, so the start yaw value is ignored.
-    # ardusub must be on the $PATH, see src/orca4/setup.bash
+    # ardusub must be on the $PATH.
     ardusub_launch = ExecuteProcess(
         cmd=[
             "ardusub",
@@ -129,23 +112,6 @@ def launch_setup(context, *args, **kwargs):
         output="screen",
         condition=IfCondition(launch_ardusub),
     )
-    gz_sim_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [
-                PathJoinSubstitution(
-                    [
-                        FindPackageShare("ros_gz_sim"),
-                        "launch",
-                        "gz_sim.launch.py",
-                    ]
-                )
-            ]
-        ),
-        launch_arguments=[
-            ("gz_args", gz_args),
-        ],
-        condition=IfCondition(gui),
-    )
 
     description_file = PathJoinSubstitution(
         [
@@ -156,6 +122,7 @@ def launch_setup(context, *args, **kwargs):
         ]
     )
 
+    # Attach the vehicle to the running world via `ros_gz_sim create`.
     gz_spawner = Node(
         package="ros_gz_sim",
         executable="create",
@@ -178,7 +145,6 @@ def launch_setup(context, *args, **kwargs):
             yaw,
         ],
         output="both",
-        condition=IfCondition(gui),
         parameters=[{"use_sim_time": use_sim_time}],
     )
 
@@ -208,7 +174,6 @@ def launch_setup(context, *args, **kwargs):
     )
 
     return [
-        gz_sim_launch,
         gz_spawner,
         spawn_exit_handler,
         mavros_node,
@@ -220,39 +185,15 @@ def launch_setup(context, *args, **kwargs):
 def generate_launch_description():
     args = [
         DeclareLaunchArgument(
-            "paused",
-            default_value="false",
-            description="Start the simulation paused",
-        ),
-        DeclareLaunchArgument(
-            "gui",
-            default_value="true",
-            description="Flag to enable the gazebo gui",
-        ),
-        DeclareLaunchArgument(
             "use_sim_time",
             default_value="true",
             description="Flag to indicate whether to use simulation time",
         ),
         DeclareLaunchArgument(
-            "debug",
-            default_value="false",
-            description="Flag to enable the gazebo debug flag",
-        ),
-        DeclareLaunchArgument(
-            "headless",
-            default_value="false",
-            description="Flag to enable the gazebo headless mode",
-        ),
-        DeclareLaunchArgument(
-            "verbose",
-            default_value="0",
-            description="Adjust level of console verbosity",
-        ),
-        DeclareLaunchArgument(
             "world_name",
-            default_value="empty.sdf",
-            description="Gazebo world file to launch",
+            default_value="robotx_2026_sg_river",
+            description="World the vehicle is spawned into; read only to derive "
+            "the ArduSub home coordinates (the world is launched by world.launch.py)",
         ),
         DeclareLaunchArgument(
             "namespace",
@@ -261,12 +202,12 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "x",
-            default_value="0.0",
+            default_value="47.8",
             description="Initial x position",
         ),
         DeclareLaunchArgument(
             "y",
-            default_value="0.0",
+            default_value="-415.4",
             description="Initial y position",
         ),
         DeclareLaunchArgument(

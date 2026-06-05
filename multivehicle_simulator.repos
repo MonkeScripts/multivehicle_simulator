@@ -15,3 +15,14 @@ repositories:
   ardupilot_gazebo:
     type: git
     url: https://github.com/ArduPilot/ardupilot_gazebo.git
+  bb_robotx_dashboard:
+    type: git
+    url: https://github.com/BumblebeeAS/bb_robotx_dashboard.git
+    # Has a `third_party/robocommand` submodule -> import with:
+    #   vcs import src --recursive < .../multivehicle_simulator.repos
+    # (upstream ships the gitlink but no .gitmodules, so a .gitmodules pointing
+    # at https://github.com/MonkeScripts/robocommand.git is added in the clone
+    # for --recursive to resolve it). The submodule only provides the .proto
+    # SOURCE: still run scripts/fetch_protoc.sh + compile_protos.sh to generate
+    # proto/report_pb2.py, and build the frontend (cd frontend && npm install
+    # && npm run build).
