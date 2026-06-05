@@ -17,6 +17,11 @@
 
 session_name: mvsim
 
+# Mouse support (scroll/select/resize) + large scrollback history.
+global_options:
+  mouse: 'on'
+  history-limit: 50000
+
 # Sourced in every pane before its pre-typed command.
 shell_command_before:
   - source /opt/ros/humble/setup.bash
