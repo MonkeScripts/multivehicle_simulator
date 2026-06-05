@@ -48,6 +48,43 @@
       </sensor>
     </link>
 
+    <!-- ==================== Front camera (forward-facing on the bow) ==================== -->
+    <link name="front_cam_link">
+      <!-- Bow of frame, level, forward-facing (+X) relative to base_link -->
+      <pose>0.18 0.0 0.02 0 0 0</pose>
+      <inertial>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>0.0001</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.0001</iyy><iyz>0</iyz>
+          <izz>0.0001</izz>
+        </inertia>
+      </inertial>
+      <sensor name="front_cam" type="camera">
+        <always_on>1</always_on>
+        <update_rate>12</update_rate>
+        <camera>
+          <horizontal_fov>1.6384266136</horizontal_fov>
+          <image>
+            <width>1024</width>
+            <height>768</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>20.0</far>
+          </clip>
+        </camera>
+        <topic>/bluerov/front_cam/image</topic>
+        <gz_frame_id>front_cam_optical</gz_frame_id>
+      </sensor>
+    </link>
+
+    <joint name="front_cam_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>front_cam_link</child>
+    </joint>
+
     <!-- Hydrodynamics plugin -->
     <plugin
         filename="gz-sim-hydrodynamics-system"

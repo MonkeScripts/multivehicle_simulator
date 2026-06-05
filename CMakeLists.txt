@@ -31,6 +31,16 @@ install(
 
 ament_python_install_package(${PROJECT_NAME})
 
+# bridge.py / bridges.py live alongside the other scripts/ but are a small
+# python LIBRARY (used by bb_robotx_dashboard's robotx_2026_sim.launch.py), so
+# install them INTO the multivehicle_sim python package — they import as
+# multivehicle_sim.bridge / multivehicle_sim.bridges.
+install(FILES
+  scripts/bridge.py
+  scripts/bridges.py
+  DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
+)
+
 install(PROGRAMS
   scripts/ground_truth_to_mavros.py
   scripts/bluerov_movement.py

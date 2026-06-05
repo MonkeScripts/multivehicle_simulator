@@ -1,0 +1,92 @@
+# tmuxp debug session for the multivehicle simulator (run INSIDE the mvsim
+# container). Load with:
+#
+#   tmuxp load /root/HOST/dave_ws/src/multivehicle_simulator/tmuxp/mvsim_debug.yaml
+#
+# Every command is PRE-TYPED but NOT executed (enter: false) so you start them
+# in dependency order and watch each one. Recommended order:
+#
+#   1) world      — bring up Gazebo + the course first
+#   2) bluerov    — attach the ArduSub BlueROV2 to the running world
+#   3) px4        — (optional) XRCE agent, then a PX4 SITL drone in the world
+#   4) offboard   — (optional) PX4 offboard demo (needs the agent + px4 up)
+#   5) dashboard  — web backend (:8080) + sim-side LED/incident nodes
+#   6) debug      — free shell for ros2 topic/echo/service introspection
+#
+# Adjust WS_DIR below if your workspace isn't mounted at /root/HOST/dave_ws.
+
+session_name: mvsim
+
+# Sourced in every pane before its pre-typed command.
+shell_command_before:
+  - source /opt/ros/humble/setup.bash
+  - "[ -f /root/HOST/dave_ws/install/setup.bash ] && source /root/HOST/dave_ws/install/setup.bash"
+  - cd /root/HOST/dave_ws
+
+windows:
+  # 1. Gazebo world (start this first).
+  - window_name: world
+    focus: true
+    panes:
+      - shell_command:
+          - cmd: ros2 launch multivehicle_sim world.launch.py world_name:=robotx_2026_sg_river
+            enter: false
+
+  # 2. BlueROV2 (ArduSub + MAVROS + ros<->gz bridge). Attaches to the world.
+  - window_name: bluerov
+    panes:
+      - shell_command:
+          - cmd: ros2 launch multivehicle_sim bluerov.launch.py
+            enter: false
+
+  # 3. PX4 drone — XRCE-DDS agent (top) + PX4 SITL standalone (bottom).
+  - window_name: px4
+    layout: even-vertical
+    panes:
+      - shell_command:
+          - cmd: MicroXRCEAgent udp4 -p 8888
+            enter: false
+      # PX4_GZ_MODEL_POSE places the drone on a pier deck (pier_3 visual; its
+      # collision_platform deck top is at world z=3.05). World xy (47.40,
+      # -388.95) is the deck centre; z=3.85 = deck top + the ~0.8 rest offset.
+      - shell_command:
+          - cmd: PX4_GZ_STANDALONE=1 PX4_SYS_AUTOSTART=4001 PX4_PARAM_UXRCE_DDS_SYNCT=0 PX4_GZ_MODEL_POSE="47.40,-388.95,3.85,0,0.0" /root/px4/px4_sitl/bin/px4 -w /root/px4/px4_sitl/romfs -i 1
+            enter: false
+
+  # 4. PX4 offboard demo (check vehicle_namespace / vehicle_id args first).
+  - window_name: offboard
+    panes:
+      - shell_command:
+          - cmd: ros2 launch multivehicle_sim px4_offboard.launch.py
+            enter: false
+
+  # 5. Dashboard — fake vehicle (top) + web backend (middle,
+  #    http://localhost:8080) + sim-side LED/incident nodes (bottom).
+  - window_name: dashboard
+    layout: even-vertical
+    panes:
+      # Fake vehicle: RoboCommand TCP server on :9000 that the dashboard
+      # backend connects to (stands in for a real ASV/AUV). Start it first so
+      # the dashboard has live reports to display.
+      - shell_command:
+          - cmd: ros2 run bb_robotx_dashboard fake_vehicle_publisher --port 9000
+            enter: false
+      - shell_command:
+          - cmd: ros2 launch bb_robotx_dashboard dashboard.launch.py
+            enter: false
+      - shell_command:
+          - cmd: ros2 launch bb_robotx_dashboard robotx_2026_sim.launch.py
+            enter: false
+
+  # 6. Free shell for introspection + handy one-offs (all pre-typed).
+  - window_name: debug
+    panes:
+      - shell_command:
+          - cmd: ros2 topic list
+            enter: false
+      - shell_command:
+          - cmd: 'ros2 launch multivehicle_sim bluerov_mission.launch.py   # square-pattern dive demo'
+            enter: false
+      - shell_command:
+          - cmd: 'ros2 launch multivehicle_sim boat.launch.py   # USV'
+            enter: false

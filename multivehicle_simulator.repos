@@ -15,6 +15,12 @@ repositories:
   ardupilot_gazebo:
     type: git
     url: https://github.com/ArduPilot/ardupilot_gazebo.git
+  # Repo is named bb_led_plugin; cloned as gz_led_plugin (the ROS package name,
+  # builds libgz_led_plugin.so used by the robotx26 LED buoy/dock models).
+  gz_led_plugin:
+    type: git
+    url: https://github.com/BumblebeeAS/bb_led_plugin.git
+    version: main
   bb_robotx_dashboard:
     type: git
     url: https://github.com/BumblebeeAS/bb_robotx_dashboard.git

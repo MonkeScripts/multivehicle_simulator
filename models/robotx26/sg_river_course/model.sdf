@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<sdf version="1.11">
+  <model name="sg_river_course">
+    <static>true</static>
+
+    <!-- Singapore River terrain -->
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/monkescripts/models/Singapore River (Cropped out for Robot X 2026)</uri>
+    </include>
+
+    <!-- Drone-landing collision platform -->
+    <link name="platform_plane">
+      <pose>-87.866 -288.723 0.0 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <box><size>20 20 5</size></box>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Jetty collision (single box matching full jetty length) -->
+    <link name="jetty_collision">
+      <pose>-102.397 -248.797 -0.5 0 0 -0.5457</pose>
+      <collision name="collision">
+        <geometry>
+          <box><size>158.633 6.5 3</size></box>
+        </geometry>
+      </collision>
+    </link>
+
+  </model>
+</sdf>

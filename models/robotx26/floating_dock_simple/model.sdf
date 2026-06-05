@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version='1.9'>
+  <model name='floating_dock_simple'>
+    <!-- Static but with collision — vehicles collide with it, the deck itself
+         stays fixed on the water surface (no unwanted bobbing). -->
+    <static>true</static>
+
+    <link name='deck'>
+      <pose>0 0 0.075 0 0 0</pose>
+
+      <collision name='deck_collision'>
+        <geometry>
+          <box><size>2 2 0.15</size></box>
+        </geometry>
+      </collision>
+
+      <visual name='deck_visual'>
+        <geometry>
+          <box><size>2 2 0.15</size></box>
+        </geometry>
+        <material>
+          <ambient>0.45 0.32 0.18 1</ambient>
+          <diffuse>0.60 0.45 0.25 1</diffuse>
+          <specular>0.10 0.10 0.10 1</specular>
+        </material>
+      </visual>
+
+      <!-- Colored reference circles on the deck (visual only). -->
+      <visual name='red_circle_visual'>
+        <pose>0.60 0.00 0.078 0 0 0</pose>
+        <geometry>
+          <cylinder><radius>0.325</radius><length>0.005</length></cylinder>
+        </geometry>
+        <material>
+          <ambient>0.5 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+        </material>
+      </visual>
+      <visual name='green_circle_visual'>
+        <pose>-0.30 0.52 0.078 0 0 0</pose>
+        <geometry>
+          <cylinder><radius>0.325</radius><length>0.005</length></cylinder>
+        </geometry>
+        <material>
+          <ambient>0 0.5 0 1</ambient>
+          <diffuse>0 1 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+        </material>
+      </visual>
+      <visual name='blue_circle_visual'>
+        <pose>-0.30 -0.52 0.078 0 0 0</pose>
+        <geometry>
+          <cylinder><radius>0.325</radius><length>0.005</length></cylinder>
+        </geometry>
+        <material>
+          <ambient>0 0 0.5 1</ambient>
+          <diffuse>0 0 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+        </material>
+      </visual>
+
+      <!-- Tins as child visuals so they stay attached to the deck. Poses are
+           varied (not centered on their color circle) with different yaws.
+           Link-frame z=0.115 is a compromise between the prior "floating"
+           (0.14) and "half-submerged" (0.075) values. The π/2 X-rotation
+           converts the Y-up GLB mesh to Z-up. -->
+      <visual name='red_tin_visual'>
+        <pose>0.55 0.25 0.115 1.57079632679 0 0.4</pose>
+        <geometry>
+          <mesh><uri>model://robotx24/tins/red_tin/red_tin.glb</uri></mesh>
+        </geometry>
+      </visual>
+      <visual name='green_tin_visual'>
+        <pose>-0.05 0.40 0.115 1.57079632679 0 -0.6</pose>
+        <geometry>
+          <mesh><uri>model://robotx24/tins/green_tin/green_tin.glb</uri></mesh>
+        </geometry>
+      </visual>
+      <visual name='blue_tin_visual'>
+        <pose>-0.40 -0.70 0.115 1.57079632679 0 1.1</pose>
+        <geometry>
+          <mesh><uri>model://robotx24/tins/blue_tin/blue_tin.glb</uri></mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>

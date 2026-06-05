@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version='1.9'>
+  <!-- RobotX 2026 Task 1 (Safe Passage) LED buoy.
+
+       A static buoy with a spherical "bulb" whose EMISSIVE colour the LedPlugin
+       sets per mode. Emissive = self-illuminated: the bulb glows a solid,
+       saturated colour uniformly from every angle (ASV side + UAV top),
+       independent of scene lighting. No <light> is used (we want solid emissive
+       colour, not reflected light), so it's cheap on RTF.
+
+       KNOWN LIMITATION: in this Gazebo build, runtime emissive (VisualCmd)
+       updates don't re-render — the bulb shows the FIRST colour it is given and
+       holds it. So each buoy shows a SOLID colour for its mode, but the flash_*
+       modes won't actually blink (they appear solid on their colour); steady_*
+       and off behave normally. This is the intended "solid colours, no
+       reflection" setup — flashing has been set aside for now.
+
+       Control: plugin subscribes to /led_<instance-name>/change_led_mode
+       (gz.msgs.StringMsg); no <led_group_name> -> defaults to
+       led_<instance name>. Bridged to ROS std_msgs/String. -->
+  <model name='safe_passage_buoy'>
+    <static>true</static>
+
+    <link name='buoy_base'>
+      <pose>0 0 0.15 0 0 0</pose>
+      <collision name='buoy_collision'>
+        <geometry>
+          <cylinder><radius>0.225</radius><length>0.30</length></cylinder>
+        </geometry>
+      </collision>
+      <visual name='buoy_visual'>
+        <geometry>
+          <cylinder><radius>0.225</radius><length>0.30</length></cylinder>
+        </geometry>
+        <material>
+          <ambient>0.8 0.35 0.05 1</ambient>
+          <diffuse>1.0 0.45 0.08 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+        </material>
+      </visual>
+
+      <!-- BULB: sphere on top, emissive driven by the plugin. Visible from the
+           side (ASV) and above (UAV). Default material is dark; the plugin
+           overwrites ambient/diffuse/specular/emissive per mode. -->
+      <visual name='bulb_visual'>
+        <pose>0 0 0.25 0 0 0</pose>
+        <geometry>
+          <sphere><radius>0.08</radius></sphere>
+        </geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.02 0.02 0.02 1</diffuse>
+          <specular>0.0 0.0 0.0 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+      </visual>
+    </link>
+
+    <!-- LED system plugin. Drives bulb_visual's emissive colour per mode. -->
+    <plugin filename="libgz_led_plugin.so" name="gz::sim::systems::LedPlugin">
+      <startup_mode>off</startup_mode>
+
+      <led name='beacon'>
+        <visual_name>buoy_base::bulb_visual</visual_name>
+        <default_state>
+          <color>0 0 0 1</color>
+          <intensity>0.0</intensity>
+        </default_state>
+      </led>
+
+      <!-- OFF: bulb black. ("off"/"reset" also reset to default_state.) -->
+      <mode name='off'>
+        <step always_on='true'><color>0 0 0 1</color></step>
+      </mode>
+
+      <!-- Flashing: 1 s solid colour, 1 s black, repeating (handbook spec). -->
+      <mode name='flash_red'>
+        <step><color>1 0 0 1</color><on_time>1.0</on_time></step>
+        <step><color>0 0 0 1</color><on_time>1.0</on_time></step>
+      </mode>
+      <mode name='flash_green'>
+        <step><color>0 1 0 1</color><on_time>1.0</on_time></step>
+        <step><color>0 0 0 1</color><on_time>1.0</on_time></step>
+      </mode>
+      <mode name='flash_blue'>
+        <step><color>0 0 1 1</color><on_time>1.0</on_time></step>
+        <step><color>0 0 0 1</color><on_time>1.0</on_time></step>
+      </mode>
+
+      <!-- Solid (always-on) colours. -->
+      <mode name='steady_red'>
+        <step always_on='true'><color>1 0 0 1</color></step>
+      </mode>
+      <mode name='steady_green'>
+        <step always_on='true'><color>0 1 0 1</color></step>
+      </mode>
+      <mode name='steady_blue'>
+        <step always_on='true'><color>0 0 1 1</color></step>
+      </mode>
+    </plugin>
+  </model>
+</sdf>
