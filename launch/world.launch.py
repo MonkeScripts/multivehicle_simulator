@@ -7,6 +7,7 @@ from launch.actions import (
     DeclareLaunchArgument,
     IncludeLaunchDescription,
     OpaqueFunction,
+    SetEnvironmentVariable,
 )
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -19,6 +20,7 @@ ENU_NED_Q = str(math.sqrt(2) / 2)
 
 
 def launch_setup(context, *args, **kwargs):
+    nvidia_offload = LaunchConfiguration("nvidia_offload")
     paused = LaunchConfiguration("paused")
     gui = LaunchConfiguration("gui")
     debug = LaunchConfiguration("debug")
@@ -130,11 +132,36 @@ def launch_setup(context, *args, **kwargs):
         ],
     )
 
-    return [gz_sim_launch, clock_bridge] + world_tfs
+    # NVIDIA PRIME render offload: force gz sim's OpenGL rendering (ogre2 +
+    # camera sensors) onto the discrete NVIDIA GPU via GLVND, instead of the
+    # integrated GPU or Mesa software rasterizer (llvmpipe) — software
+    # rendering tanks RTF. Mirrors the workspaces tmuxp setup. Set before the
+    # gz_sim include so the gz server process inherits them. Disable with
+    # nvidia_offload:=false on Intel-only / non-NVIDIA hosts.
+    offload_env = [
+        SetEnvironmentVariable(
+            "__NV_PRIME_RENDER_OFFLOAD",
+            "1",
+            condition=IfCondition(nvidia_offload),
+        ),
+        SetEnvironmentVariable(
+            "__GLX_VENDOR_LIBRARY_NAME",
+            "nvidia",
+            condition=IfCondition(nvidia_offload),
+        ),
+    ]
+
+    return offload_env + [gz_sim_launch, clock_bridge] + world_tfs
 
 
 def generate_launch_description():
     args = [
+        DeclareLaunchArgument(
+            "nvidia_offload",
+            default_value="true",
+            description="Render gz sim on the discrete NVIDIA GPU via PRIME "
+            "offload (set false on non-NVIDIA hosts)",
+        ),
         DeclareLaunchArgument(
             "paused",
             default_value="false",
