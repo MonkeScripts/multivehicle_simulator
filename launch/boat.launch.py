@@ -1,3 +1,6 @@
+import os
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -21,6 +24,12 @@ def launch_setup(context, *args, **kwargs):
 
     use_sim_time = LaunchConfiguration("use_sim_time")
     namespace = LaunchConfiguration("namespace")
+
+    blueboat_gz_bridge_config_file = os.path.join(
+        get_package_share_directory("multivehicle_sim"),
+        "config",
+        "blueboat_gz_bridge.yaml",
+    )
 
     x = LaunchConfiguration("x")
     y = LaunchConfiguration("y")
@@ -71,9 +80,19 @@ def launch_setup(context, *args, **kwargs):
         )
     )
 
+    # Bridge the BlueBoat's groundtruth odometry (gz OdometryPublisher) to ROS
+    # as /blueboat/odom, mirroring the bluerov.launch.py bridge setup.
+    gz_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        name="blueboat_gz_bridge",
+        parameters=[{"config_file": blueboat_gz_bridge_config_file}],
+    )
+
     return [
         gz_spawner,
         spawn_exit_handler,
+        gz_bridge,
     ]
 
 

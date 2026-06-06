@@ -44,6 +44,7 @@ install(FILES
 install(PROGRAMS
   scripts/ground_truth_to_mavros.py
   scripts/bluerov_movement.py
+  scripts/gz_pose_to_odom.py
   DESTINATION lib/${PROJECT_NAME}
 )
 if(BUILD_TESTING)

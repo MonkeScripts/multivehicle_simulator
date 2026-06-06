@@ -169,7 +169,7 @@ def launch_setup(context, *args, **kwargs):
     gz_bridge = Node(
         package="ros_gz_bridge",
         executable="parameter_bridge",
-        name="gz_clock_bridge",
+        name="bluerov_gz_bridge",
         parameters=[{"config_file": bluerov_gz_bridge_config_file}],
     )
 
