@@ -2,7 +2,9 @@
   <model name="blueboat">
     <link name="base_link">
       <inertial>
-        <pose>-0.05 0 -0.15 0 0 0</pose>
+        <!-- Lower CG so it sits well BELOW the
+             center of buoyancy. This creates a pendulum-stable effect so the boat won't capsize.-->
+        <pose>-0.05 0 -0.60 0 0 0</pose>
         <mass>30.0</mass>
         <inertia>
           <ixx>2.42369</ixx>
@@ -20,19 +22,23 @@
           </mesh>
         </geometry>
       </collision>
+      <!-- Buoyancy/floatation boxes. These boxes ARE the
+           working buoyancy with formula-sized [w = (m/2)/(L*H*x_underwater*rho)] so the 30 kg boat
+           floats with ~45% of the hull submerged and the center of buoyancy ABOVE
+           the CG. -->
       <collision name="pontoon_port_collision">
-        <pose>-0.05 0.295 0.138 0 0 0</pose>
+        <pose>-0.05 0.295 -0.19 0 0 0</pose>
         <geometry>
           <box>
-            <size>1.2 0.20 0.40</size>
+            <size>1.20 0.065 0.37</size>
           </box>
         </geometry>
       </collision>
       <collision name="pontoon_stbd_collision">
-        <pose>-0.05 -0.295 0.138 0 0 0</pose>
+        <pose>-0.05 -0.295 -0.19 0 0 0</pose>
         <geometry>
           <box>
-            <size>1.2 0.20 0.40</size>
+            <size>1.20 0.065 0.37</size>
           </box>
         </geometry>
       </collision>
@@ -413,6 +419,7 @@
     <plugin name="gz::sim::systems::Thruster"
       filename="gz-sim-thruster-system">
       <namespace>blueboat</namespace>
+      <topic>thrusters/left/thrust</topic>
       <joint_name>motor_port_joint</joint_name>
       <thrust_coefficient>-0.02</thrust_coefficient>
       <fluid_density>1025</fluid_density>
@@ -425,6 +432,7 @@
     <plugin name="gz::sim::systems::Thruster"
       filename="gz-sim-thruster-system">
       <namespace>blueboat</namespace>
+      <topic>thrusters/right/thrust</topic>
       <joint_name>motor_stbd_joint</joint_name>
       <thrust_coefficient>0.02</thrust_coefficient>
       <fluid_density>1025</fluid_density>
