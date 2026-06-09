@@ -50,7 +50,11 @@ The simulation uses rocker to setup a dockerized environment with all the necess
 
 ### Setting up the dashboard
 The `bb_robotx_dashboard` source is not copied into the image; it lives in the
-mounted workspace. On the first shell in the container,
+mounted workspace. Both the dashboard and its shared ROS interface package
+`bb_robotx_msgs` (`BeaconState`, `IncidentZoneReport`, `SpawnIncident` /
+`ClearIncident`, `DockLedChoice`, `PipeLedChoice`) are pulled by
+`vcs import` from the manifest, so the `--packages-up-to bb_robotx_dashboard`
+build below compiles the messages first. On the first shell in the container,
 `mvsim/scripts/setup_dashboard.sh` (hooked from `~/.bashrc`) automatically
 clones the `robocommand` proto source and generates the Python proto bindings.
 The frontend and the colcon build are left to you:
@@ -96,6 +100,27 @@ A simple state machine mission is provided to demonstrate autonomous movement of
 ros2 launch multivehicle_simulator bluerov_mission.launch.py
 ```
 This will command the BlueROV2 to dive to a depth of 2 meters and move in a square pattern. During each leg of the square, the vehicle would also yaw to head in the direction of the next waypoint.
+
+### Launching the boat (BlueBoat USV) simulation
+Same world-first flow as the BlueROV2. With a world already running
+(`world.launch.py`), spawn the BlueBoat USV in a second terminal:
+```bash
+ros2 launch multivehicle_simulator boat.launch.py
+```
+`boat.launch.py` attaches the BlueBoat to the running world via `ros_gz_sim create`
+and brings up the ROS↔gz bridge — it does not start its own Gazebo. The spawn pose
+defaults to `x:=10.0 y:=-390.0`; override with `x:=… y:=… yaw:=…`, and set
+`namespace:=…` (default `blueboat`) to run more than one.
+
+Unlike the BlueROV2 (ArduSub/MAVROS), the boat runs a custom control stack rather
+than an autopilot. Start it with:
+```bash
+ros2 launch multivehicle_simulator boat_control.launch.py
+```
+This brings up the thrust mixer (`cmd_vel` → left/right thrust) and the LOS
+`blueboat_waypoint_controller`. Useful args: `spawn:=true` also spawns the boat in
+the same launch, `use_mission:=true` runs the demo square course, and
+`use_controller:=false` hands `/blueboat/cmd_vel` to nav2 instead of the LOS controller.
 
 ### Adding the PX4 drone
 > Note: The setup and scripts are adapted from https://github.com/Dronecode/roscon-25-workshop/tree/main. For more comprehensive applications of drone simulation with ROS 2 and Gazebo, please refer to the original repository.
