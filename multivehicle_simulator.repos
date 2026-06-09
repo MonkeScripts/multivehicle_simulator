@@ -32,3 +32,10 @@ repositories:
     # SOURCE: still run scripts/fetch_protoc.sh + compile_protos.sh to generate
     # proto/report_pb2.py, and build the frontend (cd frontend && npm install
     # && npm run build).
+  # Shared ROS interface package for the dashboard + sim nodes (BeaconState,
+  # IncidentZoneReport, SpawnIncident/ClearIncident, DockLedChoice,
+  # PipeLedChoice). Pruned down to just the interfaces this workspace uses.
+  bb_robotx_msgs:
+    type: git
+    url: https://github.com/MonkeScripts/bb_robotx_msgs.git
+    version: main
