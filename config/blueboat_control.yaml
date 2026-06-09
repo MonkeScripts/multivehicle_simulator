@@ -1,0 +1,44 @@
+# BlueBoat USV control-stack parameters (mixer + LOS waypoint controller).
+# Single source of truth for tuning -- edit and relaunch (or `ros2 param set`
+# live). See the plan's "PID tuning" section for the recommended order:
+#   1) surge (straight line)  2) heading (90 deg steps at zero speed)  3) guidance.
+
+blueboat_thrust_mixer:
+  ros__parameters:
+    track_width: 0.59        # m, port<->stbd thruster spacing (from model.sdf)
+    max_thrust: 30.0         # N, per-thruster clamp (tune to the prop)
+    surge_drag: 58.42        # N/(m/s)^2, |xUabsU| from model.sdf -> speed feedforward
+    surge_lin: 0.0           # N/(m/s), optional linear surge term
+    v_max: 2.0               # m/s input clamp
+    yaw_gain: 30.0           # N*m per (rad/s) desired-yaw-rate -> moment
+    w_max: 1.0               # rad/s input clamp
+    invert_yaw: false        # flip if a +angular.z command turns the wrong way
+    publish_rate_hz: 20.0
+    cmd_timeout: 0.5         # s, watchdog -> zero thrust if cmd_vel goes stale
+
+blueboat_waypoint_controller:
+  ros__parameters:
+    # Guidance (LOS)
+    delta_min: 2.5           # m, min lookahead (larger = damped cross-track, no left-right weave)
+    delta_max: 8.0           # m, max lookahead
+    k_delta: 1.0             # lookahead growth per |cross-track error|
+    acceptance_radius: 0.2   # m, leg-complete radius
+    u_cruise: 1.0            # m/s nominal surge
+    turn_shaping_p: 1.5      # cos() exponent for turn-then-go speed cut
+    r_slow: 4.0              # m, slowdown radius approaching every waypoint
+    # Turn-in-place / station-keeping gait
+    turn_in_place: true      # stop + rotate to next heading at each waypoint
+    arrival_radius: 0.6      # m, DRIVE->ALIGN switch distance to the waypoint
+    align_tol_deg: 3.0       # deg, heading-aligned threshold to exit ALIGN (crisp full pivot)
+    align_settle_degps: 5.0  # deg/s, yaw-rate-settled threshold (stop spinning before driving)
+    kp_pos: 0.7              # (m/s)/m, station-keep surge gain (along-body error)
+    u_align_max: 0.5         # m/s, station-keep surge clamp
+    repoint_radius: 1.0      # m, HOLD: point back at hold pt if drift exceeds this
+    v_settle: 0.1            # m/s, brake to a full stop before turning in place
+    # Heading PID (outputs desired yaw rate, rad/s)
+    kp_yaw: 2.0               # tuned: heading-loop bw (cross-track ~0.6 m, heading std ~4 deg)
+    ki_yaw: 0.0               # no steady-state heading bias observed -> integral not needed
+    kd_yaw: 0.5               # rate damping; keeps corner exit from overshooting
+    w_max: 1.0               # rad/s output clamp
+    i_max: 0.5               # integral contribution clamp (rad/s)
+    control_rate_hz: 20.0    # 0.05 m/tick at u_cruise -> disk accept (0.2 m) fires reliably

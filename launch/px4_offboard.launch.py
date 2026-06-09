@@ -15,7 +15,11 @@ def generate_launch_description():
                 output="screen",
                 parameters=[
                     {"use_sim_time": True},
-                    {"vehicle_namespace": "px4_1"},
+                    # uXRCE-DDS topic namespace -> /x500/fmu/... . Must match
+                    # PX4_UXRCE_DDS_NS=x500 set on the px4 SITL process.
+                    {"vehicle_namespace": "x500"},
+                    # target_system for VehicleCommand: MAV_SYS_ID = instance+1,
+                    # so 2 for `px4 ... -i 1`.
                     {"vehicle_id": 2},
                 ],
             ),

@@ -1,7 +1,7 @@
 // ============================================================================
-// ORIGINAL VERSION - OffboardDemo.cpp
+// PX4OffboardDemo.cpp
 // ============================================================================
-#include "RosconPx4OffboardDemo.hpp"
+#include "PX4OffboardDemo.hpp"
 
 OffboardDemo::OffboardDemo()
     : Node("px4_offboard_demo"),
@@ -51,13 +51,18 @@ OffboardDemo::OffboardDemo()
     sp.yaw = NAN;                                                  // Yaw in radians
     _trajectory_setpoint_pub->publish(sp);
 
-    _trajectory_waypoints.push_back(Eigen::Vector3f(5.0f, 0.0f, -1.5f));
-    _trajectory_waypoints.push_back(Eigen::Vector3f(5.0f, 5.0f, -1.5f));
-    _trajectory_waypoints.push_back(Eigen::Vector3f(-5.0f, 5.0f, -1.5f));
-    _trajectory_waypoints.push_back(Eigen::Vector3f(-5.0f, -5.0f, -1.5f));
-    _trajectory_waypoints.push_back(Eigen::Vector3f(5.0f, -5.0f, -1.5f));
-    _trajectory_waypoints.push_back(Eigen::Vector3f(5.0f, 0.0f, -1.5f));
-    _trajectory_waypoints.push_back(Eigen::Vector3f(0.0f, 0.0f, -1.5f));
+    // Single standoff observation point, absolute in the PX4 local NED frame
+    // about the takeoff point (world 47.40, -388.95). World is ENU heading 0,
+    // so North(+x_ned) = world +Y, East(+y_ned) = world +X.
+    //
+    // The safe-passage buoy field is world x[32,49] y[-399,-408]. We STAND OFF
+    // ~10 m WEST of it (world ~(22, -403) -> NED North -14, East -25) at 6 m
+    // altitude and do a 360 deg yaw scan there, so the front camera sweeps the
+    // whole field as the drone rotates. From this range every buoy sits at
+    // 23-30 deg depression and within the camera's ~100 deg hfov; standing
+    // closer than world x~=25 (East > -22) drops the near buoys below the frame.
+    // After the scan the drone flies back to the takeoff point and lands.
+    _trajectory_waypoints.push_back(Eigen::Vector3f(-14.0f, -25.0f, -6.0f));  // standoff — yaw-scan here
 
     RCLCPP_INFO(this->get_logger(), "OffboardDemo node initialized.");
 }
@@ -84,7 +89,11 @@ void OffboardDemo::runStateMachine() {
                 if (isStateTimeout(2.0)) {
                     _home_setpoint[0] = _local_position.x;
                     _home_setpoint[1] = _local_position.y;
-                    _home_setpoint[2] = _local_position.z - 1.5;  // Hover at takeoff altitude
+                    // Climb 10 m above the takeoff deck (NED z is down-positive,
+                    // so subtract). The drone takes off from the pier; 1.5 m put
+                    // the whole square inside the jetty structure, so fly well
+                    // above it — clear of the jetty and over the channel tasks.
+                    _home_setpoint[2] = _local_position.z - 10.0;
                     _home_setpoint[3] = _local_position.heading;
                     switchToOffboard();
                     _state = State::Arm;
@@ -137,85 +146,85 @@ void OffboardDemo::runStateMachine() {
         }
 
         case State::Waypoint: {
-            // Check if we have reached the current waypoint
-            if (_current_waypoint_index < _trajectory_waypoints.size()) {
-                const auto& waypoint = _trajectory_waypoints[_current_waypoint_index];
-                px4_msgs::msg::TrajectorySetpoint sp;
-                sp.timestamp = this->get_clock()->now().nanoseconds() / 1000;  // PX4 expects microseconds
-                sp.position[0] = waypoint.x();
-                sp.position[1] = waypoint.y();
-                sp.position[2] = waypoint.z();
-                sp.yaw = NAN;  // No specific yaw for waypoints
-                _trajectory_setpoint_pub->publish(sp);
+            // Fly out to the single standoff observation point, holding heading.
+            const auto& obs = _trajectory_waypoints.front();
+            px4_msgs::msg::TrajectorySetpoint sp;
+            sp.timestamp = this->get_clock()->now().nanoseconds() / 1000;  // PX4 expects microseconds
+            sp.position[0] = obs.x();
+            sp.position[1] = obs.y();
+            sp.position[2] = obs.z();
+            sp.yaw = NAN;  // hold heading while transiting
+            _trajectory_setpoint_pub->publish(sp);
 
-                // Check if we have reached the waypoint (within a small tolerance)
-                if (std::abs(_local_position.x - waypoint.x()) < 0.1 &&
-                    std::abs(_local_position.y - waypoint.y()) < 0.1 &&
-                    std::abs(_local_position.z - waypoint.z()) < 0.1) {
-                    _current_waypoint_index++;
-                    if (_current_waypoint_index < _trajectory_waypoints.size()) {
-                        RCLCPP_INFO(this->get_logger(), "Moving to next waypoint %zu", _current_waypoint_index);
-                    } else {
-                        RCLCPP_INFO(this->get_logger(), "All waypoints reached, returning to home position");
-                    }
-                }
-            } else {
-                // All waypoints reached go home and then switch to Yaw state
-                px4_msgs::msg::TrajectorySetpoint sp;
-                sp.timestamp = this->get_clock()->now().nanoseconds() / 1000;  // PX4 expects microseconds
-                sp.position[0] = _home_setpoint[0];
-                sp.position[1] = _home_setpoint[1];
-                sp.position[2] = _home_setpoint[2];
-                sp.yaw = NAN;  // No specific yaw for home position
-                _trajectory_setpoint_pub->publish(sp);
-                if (std::abs(_local_position.x - _home_setpoint[0]) < 0.1 &&
-                    std::abs(_local_position.y - _home_setpoint[1]) < 0.1 &&
-                    std::abs(_local_position.z - _home_setpoint[2]) < 0.1) {
-                    RCLCPP_INFO(this->get_logger(), "All waypoints reached, moving to Yaw state");
-                    _state = State::Yaw;
-                    _state_start_time = this->now();
-                }
+            if (std::abs(_local_position.x - obs.x()) < 0.1 &&
+                std::abs(_local_position.y - obs.y()) < 0.1 &&
+                std::abs(_local_position.z - obs.z()) < 0.1) {
+                RCLCPP_INFO(this->get_logger(), "Reached standoff, State: Waypoint -> Yaw (scan)");
+                _state = State::Yaw;
+                _state_start_time = this->now();
             }
 
             break;
         }
 
         case State::Yaw: {
-            // Step size for yaw increment (1 degree per step)
+            // Yaw-scan in place AT THE STANDOFF point so the camera sweeps the
+            // whole buoy field, then return home to land.
+            const auto& obs = _trajectory_waypoints.front();
             const double yaw_step = M_PI / 180.0;                // 1 degree in radians
             static double target_yaw = _local_position.heading;  // Initialize with current heading
             static double total_yaw_rotated = 0.0;               // Total yaw rotated
 
-            // Check if the current heading is close enough to the target yaw
+            // Step the yaw target once the current target is reached.
             if (headingReached(target_yaw)) {
-                // Increment the target yaw
                 target_yaw += yaw_step;
                 total_yaw_rotated += yaw_step;
 
                 // Wrap target_yaw to keep it within -π to π
                 if (target_yaw > M_PI) target_yaw -= 2 * M_PI;
                 if (target_yaw < -M_PI) target_yaw += 2 * M_PI;
-
-                // Publish the new trajectory setpoint
-                px4_msgs::msg::TrajectorySetpoint sp;
-                sp.timestamp = this->get_clock()->now().nanoseconds() / 1000;  // PX4 expects microseconds
-                sp.position[0] = _home_setpoint[0];
-                sp.position[1] = _home_setpoint[1];
-                sp.position[2] = _home_setpoint[2];
-                sp.yaw = target_yaw;  // Update the yaw target
-                _trajectory_setpoint_pub->publish(sp);
             }
 
-            // Check if the total yaw rotation is complete (360 degrees)
-            if (total_yaw_rotated >= 2 * M_PI)  // Full 360-degree rotation
-            {
-                RCLCPP_INFO(this->get_logger(), "State: Yaw -> Land");
-                _state = State::Land;
-                land();
+            // Hold the standoff position while scanning (publish every tick so
+            // the offboard setpoint stream stays continuous).
+            px4_msgs::msg::TrajectorySetpoint sp;
+            sp.timestamp = this->get_clock()->now().nanoseconds() / 1000;  // PX4 expects microseconds
+            sp.position[0] = obs.x();
+            sp.position[1] = obs.y();
+            sp.position[2] = obs.z();
+            sp.yaw = target_yaw;
+            _trajectory_setpoint_pub->publish(sp);
+
+            // Full 360-degree scan complete -> head home.
+            if (total_yaw_rotated >= 2 * M_PI) {
+                RCLCPP_INFO(this->get_logger(), "Yaw scan complete, State: Yaw -> ReturnHome");
+                _state = State::ReturnHome;
+                _state_start_time = this->now();
 
                 // Reset yaw tracking variables for next use
-                target_yaw = _local_position.heading;  // Reset to current heading
+                target_yaw = _local_position.heading;
                 total_yaw_rotated = 0.0;
+            }
+
+            break;
+        }
+
+        case State::ReturnHome: {
+            // Fly back to the takeoff point, then land there.
+            px4_msgs::msg::TrajectorySetpoint sp;
+            sp.timestamp = this->get_clock()->now().nanoseconds() / 1000;  // PX4 expects microseconds
+            sp.position[0] = _home_setpoint[0];
+            sp.position[1] = _home_setpoint[1];
+            sp.position[2] = _home_setpoint[2];
+            sp.yaw = NAN;
+            _trajectory_setpoint_pub->publish(sp);
+
+            if (std::abs(_local_position.x - _home_setpoint[0]) < 0.1 &&
+                std::abs(_local_position.y - _home_setpoint[1]) < 0.1 &&
+                std::abs(_local_position.z - _home_setpoint[2]) < 0.1) {
+                RCLCPP_INFO(this->get_logger(), "Back at takeoff, State: ReturnHome -> Land");
+                _state = State::Land;
+                land();
             }
 
             break;

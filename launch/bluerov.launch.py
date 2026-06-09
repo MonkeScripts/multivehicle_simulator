@@ -56,7 +56,9 @@ def launch_setup(context, *args, **kwargs):
     home_heading = 0.0
     w_name = world_name.perform(context)
     if w_name != "empty.sdf":
-        world_full_path = os.path.join(pkg_multivehicle_sim, "worlds", f"{w_name}.world")
+        world_full_path = os.path.join(
+            pkg_multivehicle_sim, "worlds", f"{w_name}.world"
+        )
         if os.path.exists(world_full_path):
             print(f"Parsing world file for coordinates: {world_full_path}")
             try:
@@ -202,13 +204,13 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "x",
-            default_value="47.8",
-            description="Initial x position",
+            default_value="47.824",
+            description="Initial x position (default incident-zone centre)",
         ),
         DeclareLaunchArgument(
             "y",
-            default_value="-415.4",
-            description="Initial y position",
+            default_value="-415.373",
+            description="Initial y position (default incident-zone centre)",
         ),
         DeclareLaunchArgument(
             "z",

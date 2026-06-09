@@ -3,13 +3,13 @@
 #
 #   tmuxp load /root/HOST/dave_ws/src/multivehicle_simulator/tmuxp/mvsim_debug.yaml
 #
-# Every command is PRE-TYPED but NOT executed () so you start them
+# Every command is PRE-TYPED but NOT executed (enter: false) so you start them
 # in dependency order and watch each one. Recommended order:
 #
 #   1) world      — bring up Gazebo + the course first
 #   2) bluerov    — attach the ArduSub BlueROV2 to the running world
-#   3) px4        — (optional) XRCE agent, then a PX4 SITL drone in the world
-#   4) offboard   — (optional) PX4 offboard demo (needs the agent + px4 up)
+#   3) boat       — spawn the BlueBoat USV, its control stack, and square mission
+#   4) px4        — (optional) XRCE agent + PX4 SITL drone + odom bridge + offboard demo
 #   5) dashboard  — web backend (:8080) + sim-side LED/incident nodes
 #   6) debug      — free shell for ros2 topic/echo/service introspection
 #
@@ -35,41 +35,73 @@ windows:
     panes:
       - shell_command:
           - cmd: ros2 launch multivehicle_sim world.launch.py world_name:=robotx_2026_sg_river
-            
+            enter: false
 
   # 2. BlueROV2 (ArduSub + MAVROS + ros<->gz bridge). Attaches to the world.
   - window_name: bluerov
     panes:
       - shell_command:
           - cmd: ros2 launch multivehicle_sim bluerov.launch.py
-            
+            enter: false
+      - shell_command:
+          - cmd: 'ros2 launch multivehicle_sim bluerov_mission.launch.py   # square-pattern dive demo'
+            enter: false
 
-  # 3. PX4 drone — XRCE-DDS agent (top) + PX4 SITL standalone (bottom).
+  # 3. BlueBoat USV — spawn (top) + control stack (middle) + square mission
+  #    (bottom). Start top-to-bottom: spawn the boat into the running world,
+  #    bring up the mixer/odom-TF/LOS controller, then lay down the mission
+  #    course (the mission node needs the controller running to follow it).
+  - window_name: boat
+    layout: even-vertical
+    panes:
+      # Spawn the BlueBoat into the running world (+ groundtruth odom bridge).
+      - shell_command:
+          - cmd: ros2 launch multivehicle_sim boat.launch.py
+            enter: false
+      # Control stack: thrust mixer + odom->base_link TF + LOS waypoint controller.
+      - shell_command:
+          - cmd: ros2 launch multivehicle_sim boat_control.launch.py
+            enter: false
+      # Demo square-course mission (publishes /blueboat/goal_pose for the controller).
+      - shell_command:
+          - cmd: ros2 run multivehicle_sim blueboat_mission.py
+            enter: false
+
+  # 4. PX4 drone — all drone nodes in one window (even-vertical): XRCE-DDS
+  #    agent, PX4 SITL standalone, the x500 gz bridge (odom + camera), and the
+  #    offboard demo. Start top-to-bottom; the offboard demo needs the agent + PX4.
   - window_name: px4
     layout: even-vertical
     panes:
       - shell_command:
           - cmd: MicroXRCEAgent udp4 -p 8888
-            
+            enter: false
+      # SYS_AUTOSTART=4010 -> gz_x500_mono_cam: an x500 with a FRONT-facing mono
+      # camera (gz model x500_mono_cam, spawned x500_mono_cam_1 for `-i 1`). For
+      # the DOWN-facing camera use 4010->4014 (model x500_mono_cam_down_1), and
+      # update model_name in the uav_gz bridge below to match.
+      # PX4_UXRCE_DDS_NS=x500 namespaces the drone's uXRCE-DDS (ROS 2) topics as
+      # /x500/fmu/... (overrides PX4's default px4_<instance> = px4_1 for `-i 1`),
+      # matching /x500/odom + /x500/front_cam. px4_offboard.launch.py's
+      # vehicle_namespace must match this.
       # PX4_GZ_MODEL_POSE places the drone on a pier deck (pier_3 visual; its
       # collision_platform deck top is at world z=3.05). World xy (47.40,
       # -388.95) is the deck centre; z=3.85 = deck top + the ~0.8 rest offset.
       - shell_command:
-          - cmd: PX4_GZ_STANDALONE=1 PX4_SYS_AUTOSTART=4001 PX4_PARAM_UXRCE_DDS_SYNCT=0 PX4_GZ_MODEL_POSE="47.40,-388.95,3.85,0,0.0" /root/px4/px4_sitl/bin/px4 -w /root/px4/px4_sitl/romfs -i 1
-            
-      # Bridge the x500's gz groundtruth pose (/world/<world>/pose/info) to
-      # /x500/odom so the dashboard incident_manager sees the UAV. model_name
-      # is x500_1 to match the `px4 ... -i 1` instance above.
+          - cmd: PX4_GZ_STANDALONE=1 PX4_SYS_AUTOSTART=4010 PX4_UXRCE_DDS_NS=x500 PX4_PARAM_UXRCE_DDS_SYNCT=0 PX4_GZ_MODEL_POSE="47.40,-388.95,3.85,0,0.0" /root/px4/px4_sitl/bin/px4 -w /root/px4/px4_sitl/romfs -i 1
+            enter: false
+      # One parameter_bridge for all the drone's gz<->ROS topics: groundtruth
+      # pose -> /x500/odom (for the dashboard incident_manager) + front camera
+      # -> /x500/front_cam/{image,camera_info}. model_name is the gz model PX4
+      # spawns: x500_mono_cam_1 for 4010 + `-i 1` (x500_mono_cam_down_1 for 4014).
       - shell_command:
-          - cmd: ros2 launch multivehicle_sim uav_odom.launch.py model_name:=x500_1 odom_topic:=/x500/odom
-            
-
-  # 4. PX4 offboard demo (check vehicle_namespace / vehicle_id args first).
-  - window_name: offboard
-    panes:
+          - cmd: ros2 launch multivehicle_sim uav_gz.launch.py model_name:=x500_mono_cam_1
+            enter: false
+      # Offboard demo: flies a square 10 m above the deck, clearing the jetty
+      # (check vehicle_namespace / vehicle_id args first). Needs the agent + PX4.
       - shell_command:
           - cmd: ros2 launch multivehicle_sim px4_offboard.launch.py
-            
+            enter: false
 
   # 5. Dashboard — fake vehicle (top) + web backend (middle,
   #    http://localhost:8080) + sim-side LED/incident nodes (bottom).
@@ -81,26 +113,13 @@ windows:
       # the dashboard has live reports to display.
       - shell_command:
           - cmd: ros2 run bb_robotx_dashboard fake_vehicle_publisher --port 9000
-            
+            enter: false
       - shell_command:
           - cmd: ros2 launch bb_robotx_dashboard dashboard.launch.py
-            
+            enter: false
       # bridges_pkg/models_pkg select the provider package: dave_ws merged the
       # gz bridges + incident-cube model into multivehicle_sim (the launch file
       # defaults to common_ws's robotx_gz + bb_worlds).
       - shell_command:
           - cmd: ros2 launch bb_robotx_dashboard robotx_2026_sim.launch.py bridges_pkg:=multivehicle_sim models_pkg:=multivehicle_sim auv_name:=bluerov auv_pose_topic:=/bluerov/odom asv_name:=blueboat asv_pose_topic:=/blueboat/odom uav_name:=x500 uav_pose_topic:=/x500/odom
-            
-
-  # 6. Free shell for introspection + handy one-offs (all pre-typed).
-  - window_name: debug
-    panes:
-      - shell_command:
-          - cmd: ros2 topic list
-            
-      - shell_command:
-          - cmd: 'ros2 launch multivehicle_sim bluerov_mission.launch.py   # square-pattern dive demo'
-            
-      - shell_command:
-          - cmd: 'ros2 launch multivehicle_sim boat.launch.py   # USV'
-            
+            enter: false

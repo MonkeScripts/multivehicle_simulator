@@ -353,8 +353,15 @@
       <pose>20.134 -403.723 0 0 0 0</pose>
     </include>
 
+    <!-- Underwater pipe task (RobotX 2026). Pose is world-relative. -->
+    <include>
+      <name>pipe_task</name>
+      <uri>model://robotx26/pipe_task</uri>
+      <pose>62 -414.723 -2 0 0 -1.21</pose>
+    </include>
 
-    
+
+
     <!-- Visual piers along the jetty (same reason as above — material refs
          like pier_diffuse.jpg only resolve at world-level include). -->
     <include>

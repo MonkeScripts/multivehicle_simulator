@@ -12,7 +12,7 @@ class GzPoseToOdom(Node):
         super().__init__("gz_pose_to_odom")
 
         self.declare_parameter("pose_topic", "/x500/pose_info")
-        self.declare_parameter("model_name", "x500_1")
+        self.declare_parameter("model_name", "x500_mono_cam_1")
         self.declare_parameter("odom_topic", "/x500/odom")
         self.declare_parameter("frame_id", "map")
         self.declare_parameter("child_frame_id", "base_link")

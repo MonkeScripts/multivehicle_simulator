@@ -1,5 +1,5 @@
 // ============================================================================
-// ORIGINAL VERSION - OffboardDemo.hpp
+// PX4OffboardDemo.hpp
 // ============================================================================
 #pragma once
 
@@ -44,6 +44,7 @@ class OffboardDemo : public rclcpp::Node {
         Hover,
         Waypoint,
         Yaw,
+        ReturnHome,
         Land,
         Done,
     };
