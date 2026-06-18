@@ -360,6 +360,67 @@
       <pose>62 -414.723 -2 0 0 -1.21</pose>
     </include>
 
+    <!-- Pipe-task start/end buoys -->
+    <model name='pipe_buoy_left'>
+      <static>true</static>
+      <pose>63 -414 0 0 0 0</pose>
+      <link name='buoy_base'>
+        <pose>0 0 0.15 0 0 0</pose>
+        <collision name='buoy_collision'>
+          <geometry><cylinder><radius>0.225</radius><length>0.30</length></cylinder></geometry>
+        </collision>
+        <visual name='buoy_visual'>
+          <geometry><cylinder><radius>0.225</radius><length>0.30</length></cylinder></geometry>
+          <material>
+            <ambient>0.8 0.35 0.05 1</ambient>
+            <diffuse>1.0 0.45 0.08 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <!-- Red LED bulb (emissive = self-lit, visible from ASV side + UAV top). -->
+        <visual name='bulb_visual'>
+          <pose>0 0 0.25 0 0 0</pose>
+          <geometry><sphere><radius>0.08</radius></sphere></geometry>
+          <material>
+            <ambient>0.3 0.0 0.0 1</ambient>
+            <diffuse>1.0 0.0 0.0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+            <emissive>1.0 0.0 0.0 1</emissive>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name='pipe_buoy_right'>
+      <static>true</static>
+      <pose>55.36 -419.56 0 0 0 0</pose>
+      <link name='buoy_base'>
+        <pose>0 0 0.15 0 0 0</pose>
+        <collision name='buoy_collision'>
+          <geometry><cylinder><radius>0.225</radius><length>0.30</length></cylinder></geometry>
+        </collision>
+        <visual name='buoy_visual'>
+          <geometry><cylinder><radius>0.225</radius><length>0.30</length></cylinder></geometry>
+          <material>
+            <ambient>0.8 0.35 0.05 1</ambient>
+            <diffuse>1.0 0.45 0.08 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+        <!-- Green LED bulb. -->
+        <visual name='bulb_visual'>
+          <pose>0 0 0.25 0 0 0</pose>
+          <geometry><sphere><radius>0.08</radius></sphere></geometry>
+          <material>
+            <ambient>0.0 0.3 0.0 1</ambient>
+            <diffuse>0.0 1.0 0.0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+            <emissive>0.0 1.0 0.0 1</emissive>
+          </material>
+        </visual>
+      </link>
+    </model>
+
 
 
     <!-- Visual piers along the jetty (same reason as above — material refs
@@ -405,14 +466,18 @@
       <pose>-45.757 -332.837 -5 0 0 1.0251</pose>
     </include>
 
-    <!-- RobotX 2026 Task 3 (Coordinated Logistics) — simplified floating dock.
-         Static (collision only — vehicles bounce off it, the deck doesn't bob).
-         Carries its tins + colored circles as child visuals. Placed ~15 m NE
-         of the ASV spawn (47.824, -415.373). -->
+    <!-- RobotX 2026 Task 3 (Coordinated Logistics) -->
     <include>
       <name>floating_dock</name>
       <uri>model://robotx26/floating_dock_simple</uri>
-      <pose>62.134 -403.723 0 0 0 0</pose>
+      <pose>13.134 -403.723 0 0 0 0</pose>
+    </include>
+
+    <!-- Second floating tin platform for Task 3 -->
+    <include>
+      <name>floating_dock_2</name>
+      <uri>model://robotx26/floating_dock_simple</uri>
+      <pose>13.134 -399.323 0 0 0 0</pose>
     </include>
 
     <!-- RobotX 2026 Task 1 (Safe Passage) — LED buoy gate field.
