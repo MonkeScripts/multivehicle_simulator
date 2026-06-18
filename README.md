@@ -15,10 +15,10 @@ The simulation uses rocker to setup a dockerized environment with all the necess
     cd ~/colcon_ws/src
     git clone https://github.com/MonkeScripts/multivehicle_simulator.git
     ```
-4. Navigate to the multivehicle_simulator directory and import the required repositories using vcs:
+4. Import the required repositories into `src/` (as siblings of this package), including submodules:
     ```bash
-    cd multivehicle_simulator
-    vcs import < multivehicle_simulator.repos
+    cd ~/colcon_ws/src
+    vcs import --recursive < multivehicle_simulator/multivehicle_simulator.repos
     ```
 5. Install [rocker](https://github.com/osrf/rocker) — it wraps `docker run` with GPU and X11
    support. Install it into a dedicated virtual environment:
@@ -77,7 +77,7 @@ before exposing the dashboard beyond localhost.
 The world and the vehicle are launched separately so a vehicle can attach to an already-running
 world. Start the world in one terminal:
 ```bash
-ros2 launch multivehicle_simulator world.launch.py world_name:=robotx_2026_sg_river
+ros2 launch multivehicle_sim world.launch.py world_name:=robotx_2026_sg_river
 ```
 `world.launch.py` starts Gazebo with the RobotX 2026 Singapore River course (`robotx_2026_sg_river`
 is the default) and publishes the world-level static TFs (`world→map`, `world→world_ned`,
@@ -85,7 +85,7 @@ is the default) and publishes the world-level static TFs (`world→map`, `world�
 
 Then, in a second terminal, attach the BlueROV2 to the running world:
 ```bash
-ros2 launch multivehicle_simulator bluerov.launch.py
+ros2 launch multivehicle_sim bluerov.launch.py
 ```
 `bluerov.launch.py` spawns the BlueROV2 via `ros_gz_sim create` and brings up ArduSub, MAVROS, and
 the ROS↔gz bridge. Pass `world_name:=<world>` to match the world you launched (it is read only to
@@ -97,7 +97,7 @@ connect to the vehicle using the appropriate UDP port (14550).
 
 A simple state machine mission is provided to demonstrate autonomous movement of the BlueROV2 in the simulation. To run the mission, use the following command:
 ```bash
-ros2 launch multivehicle_simulator bluerov_mission.launch.py
+ros2 launch multivehicle_sim bluerov_mission.launch.py
 ```
 This will command the BlueROV2 to dive to a depth of 2 meters and move in a square pattern. During each leg of the square, the vehicle would also yaw to head in the direction of the next waypoint.
 
@@ -105,7 +105,7 @@ This will command the BlueROV2 to dive to a depth of 2 meters and move in a squa
 Same world-first flow as the BlueROV2. With a world already running
 (`world.launch.py`), spawn the BlueBoat USV in a second terminal:
 ```bash
-ros2 launch multivehicle_simulator boat.launch.py
+ros2 launch multivehicle_sim boat.launch.py
 ```
 `boat.launch.py` attaches the BlueBoat to the running world via `ros_gz_sim create`
 and brings up the ROS↔gz bridge — it does not start its own Gazebo. The spawn pose
@@ -115,7 +115,7 @@ defaults to `x:=10.0 y:=-390.0`; override with `x:=… y:=… yaw:=…`, and set
 Unlike the BlueROV2 (ArduSub/MAVROS), the boat runs a custom control stack rather
 than an autopilot. Start it with:
 ```bash
-ros2 launch multivehicle_simulator boat_control.launch.py
+ros2 launch multivehicle_sim boat_control.launch.py
 ```
 This brings up the thrust mixer (`cmd_vel` → left/right thrust) and the LOS
 `blueboat_waypoint_controller`. Useful args: `spawn:=true` also spawns the boat in
@@ -126,17 +126,18 @@ the same launch, `use_mission:=true` runs the demo square course, and
 > Note: The setup and scripts are adapted from https://github.com/Dronecode/roscon-25-workshop/tree/main. For more comprehensive applications of drone simulation with ROS 2 and Gazebo, please refer to the original repository.
 To add a PX4 drone to the simulation, run the following command in a new terminal inside the rocker container:
 ```bash
-PX4_GZ_STANDALONE=1 PX4_SYS_AUTOSTART=4001 PX4_PARAM_UXRCE_DDS_SYNCT=0 PX4_GZ_MODEL_POSE="47.40,-388.95,3.85,0,0.0" /root/px4/px4_sitl/bin/px4 -w /root/px4/px4_sitl/romfs -i 1
+PX4_GZ_STANDALONE=1 PX4_SYS_AUTOSTART=4010 PX4_UXRCE_DDS_NS=x500 PX4_PARAM_UXRCE_DDS_SYNCT=0 PX4_GZ_MODEL_POSE="47.40,-388.95,3.85,0,0.0" /root/px4/px4_sitl/bin/px4 -w /root/px4/px4_sitl/romfs -i 1
 ```
 The individual CLI arguments for the PX4 command are:
 - `PX4_GZ_STANDALONE=1`: Runs PX4 in standalone mode with Gazebo, attaches to an existing Gazebo instance
-- `PX4_SYS_AUTOSTART=4001`: Sets the airframe type (4001 is the generic quadrotor)
+- `PX4_SYS_AUTOSTART=4010`: Sets the airframe type (4010 is `gz_x500_mono_cam`, an x500 with a front mono camera; 4001 is the plain quadrotor, in which case pass `camera:=false model_name:=x500_1` to `uav_gz.launch.py`)
+- `PX4_UXRCE_DDS_NS=x500`: Namespaces the drone's uXRCE-DDS (ROS 2) topics as `/x500/fmu/...` (overrides PX4's default `px4_<instance>`). Must match `vehicle_namespace` in `px4_offboard.launch.py`.
 - `PX4_PARAM_UXRCE_DDS_SYNCT=0`: Disables DDS sync timing
-- `PX4_GZ_MODEL_POSE`: Sets the initial position and orientation (x, y, z, roll, pitch, yaw)
+- `PX4_GZ_MODEL_POSE`: Sets the initial pose; fields are x, y, z, roll, pitch, yaw (trailing fields optional)
 - `-w`: Specifies the working directory path for PX4 SITL
 - `-i 1`: Sets the instance ID to 1 (must be unique per vehicle). Note that the flag specifies the instance ID. The ardusub instance uses ID 0, so make sure to use a different ID for the PX4 instance to avoid conflicts.
 
-This will start a PX4 SITL instance that connects to the Gazebo simulation. You can then connect to the PX4 vehicle using QGC on UDP port 14540. 
+This will start a PX4 SITL instance that connects to the Gazebo simulation. You can then connect to the PX4 vehicle using QGC on UDP port 14550 (shared with ArduSub — use QGC's vehicle selector, see below). 
 
 You should now see the default PX4 airframe in the Gazebo simulation environment. You can also open QGC to connect to the PX4 vehicle using the appropriate UDP port (14550). If ardusub is using 14550, you can **toggle the different vehicles in QGC using the vehicle selector at the top left corner of the interface.**
 
@@ -148,11 +149,11 @@ You should now see the default PX4 airframe in the Gazebo simulation environment
     ```
 2. In another terminal inside the rocker container, source your ROS 2 workspace and run the offboard demo launch file:
     ```bash
-        ros2 launch multivehicle_simulator px4_offboard.launch.py
+        ros2 launch multivehicle_sim px4_offboard.launch.py
     ```
     In this launch file, you need to check the following parameters:
-    - `vehicle_namespace`: Prepended value to the PX4 topics. Ensure it matches the namespace used by the PX4 vehicle in the simulation (e.g., `px4_1`). Please check the topics being published by PX4 to confirm the correct namespace through`ros2 topic list` or viewing the logs on MicroXRCEAgent.
-    - `vehicle_id`: The instance ID of the PX4 vehicle (should match the ID used when launching PX4, e.g., `1`). This index is indexed from 1, so if you used `-i 1` when launching PX4, set this parameter to `2`.
+    - `vehicle_namespace`: Prepended value to the PX4 topics. Must match `PX4_UXRCE_DDS_NS` set on the PX4 SITL process (e.g., `x500`). Confirm with `ros2 topic list` or the MicroXRCEAgent logs.
+    - `vehicle_id`: The MAVLink system id (`target_system`), which is the PX4 instance + 1. So if you launched PX4 with `-i 1`, set this to `2`.
 
 This will start the offboard control demo, which commands the PX4 vehicle to take off, hover, and land autonomously.
 
@@ -165,4 +166,15 @@ When using the `ros_gz_sim` package, you may encounter an issue when requesting 
 This most likely happens because gazebo is downloading the Singapore river model from Gazebo Fuel, an online database of models and worlds.  Depending on your internet connection and the size of the high-res textures, this can make the initial load feel like it's hanging.
 
 > Note that we only incur this penalty once. Once a model is downloaded, it is cached in your local folder (usually ~/.gz/fuel or ~/.ignition/fuel). Subsequent loads should be near-instant.
+
+## License
+
+First-party code and models in this repository are licensed under the
+**Apache License 2.0** — see [`LICENSE`](LICENSE).
+
+This repository also bundles and references third-party 3D models, meshes, and
+textures (e.g. the BlueROV2 and BlueBoat models, the Pier, and Gazebo Fuel
+assets) that remain under their **own** licenses and are **not** covered by the
+Apache-2.0 grant. See [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) for
+the full inventory, origins, licenses, and attributions.
 

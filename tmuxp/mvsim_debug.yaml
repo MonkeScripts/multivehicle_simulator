@@ -97,7 +97,8 @@ windows:
       - shell_command:
           - cmd: ros2 launch multivehicle_sim uav_gz.launch.py model_name:=x500_mono_cam_1
             enter: false
-      # Offboard demo: flies a square 10 m above the deck, clearing the jetty
+      # Offboard demo: climbs ~10 m above the deck, flies to a standoff point
+      # and does a 360 deg yaw scan over the buoy field, then returns and lands
       # (check vehicle_namespace / vehicle_id args first). Needs the agent + PX4.
       - shell_command:
           - cmd: ros2 launch multivehicle_sim px4_offboard.launch.py
@@ -122,4 +123,17 @@ windows:
       # defaults to common_ws's robotx_gz + bb_worlds).
       - shell_command:
           - cmd: ros2 launch bb_robotx_dashboard robotx_2026_sim.launch.py bridges_pkg:=multivehicle_sim models_pkg:=multivehicle_sim auv_name:=bluerov auv_pose_topic:=/bluerov/odom asv_name:=blueboat asv_pose_topic:=/blueboat/odom uav_name:=x500 uav_pose_topic:=/x500/odom
+            enter: false
+
+  # 6. Debug — a free shell (top) for `ros2 topic list/echo`, `ros2 node info`,
+  #    `ros2 service call`, etc., plus the Foxglove Bridge (bottom) for live
+  #    visualization in Foxglove Studio (connect to ws://localhost:8765).
+  - window_name: debug
+    layout: even-vertical
+    panes:
+      - shell_command:
+          - cmd: 'ros2 topic list'
+            enter: false
+      - shell_command:
+          - cmd: ros2 launch foxglove_bridge foxglove_bridge_launch.xml
             enter: false
