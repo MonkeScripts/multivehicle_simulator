@@ -50,8 +50,10 @@ def launch_setup(context, *args, **kwargs):
 
     # Derive the ArduSub home (lat,lon,alt,heading) by parsing the same world
     # file world.launch.py loads. The world is NOT started here.
-    home_lat = 33.810313
-    home_lon = -118.393867
+    # Fallback home if the world has no <spherical_coordinates>: the RobotX 2026
+    # Singapore River course origin (matches robotx_2026_sg_river.world).
+    home_lat = 1.2894320
+    home_lon = 103.8553700
     home_alt = 0.0
     home_heading = 0.0
     w_name = world_name.perform(context)

@@ -15,7 +15,7 @@ class GzPoseToOdom(Node):
         self.declare_parameter("model_name", "x500_mono_cam_1")
         self.declare_parameter("odom_topic", "/x500/odom")
         self.declare_parameter("frame_id", "map")
-        self.declare_parameter("child_frame_id", "base_link")
+        self.declare_parameter("child_frame_id", "x500/base_link")
 
         self._model_name = (
             self.get_parameter("model_name").get_parameter_value().string_value

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?><package format="3">
   <name>multivehicle_sim</name>
-  <version>0.0.0</version>
+  <version>0.1.0</version>
   <description>
     <p>This package features a multivehicle Simulator</p>
   </description>
-  <maintainer email="shaolianghe0.0@gmail.com"/>
+  <maintainer email="shaolianghe0.0@gmail.com">MonkeScripts</maintainer>
   <license>Apache-2.0</license>
   <depend>xacro</depend>
   <depend>geometry_msgs</depend>

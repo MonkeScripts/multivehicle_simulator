@@ -1,1 +1,13 @@
+# Python
 *.pyc
+__pycache__/
+*.egg-info/
+
+# colcon build outputs (when building from this dir)
+build/
+install/
+log/
+
+# Editors
+.vscode/
+.idea/

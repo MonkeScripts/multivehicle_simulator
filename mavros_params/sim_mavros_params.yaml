@@ -39,7 +39,7 @@ mavros/local_position:
   ros__parameters:
     frame_id: "map"  # frame_id of /mavros/local_position/pose, etc.
     tf:
-      send: true  # Do not publish tf
+      send: true  # Publish map->base_link tf (bluerov_movement.py depends on it)
 
 mavros/vision_pose:
   ros__parameters:

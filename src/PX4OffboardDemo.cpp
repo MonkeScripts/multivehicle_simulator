@@ -14,7 +14,6 @@ OffboardDemo::OffboardDemo()
     this->_vehicle_id = this->get_parameter("vehicle_id").as_int();
     RCLCPP_INFO(this->get_logger(), "Vehicle namespace: %s", this->_vehicle_namespace.c_str());
     RCLCPP_INFO(this->get_logger(), "Vehicle ID: %d", this->_vehicle_id);
-    // loadParameters();
     this->_topic_prefix = _vehicle_namespace.empty() ? "" : "/" + _vehicle_namespace;
     RCLCPP_INFO(this->get_logger(), "topic prefix: %s", this->_topic_prefix.c_str());
 
@@ -82,9 +81,8 @@ void OffboardDemo::vehicleLandDetectedCallback(const px4_msgs::msg::VehicleLandD
 void OffboardDemo::runStateMachine() {
     switch (_state) {
         case State::Idle: {
-            // Check if pre-flight checks have passed and we are in the correct navigation state
-            if (_vehicle_status.pre_flight_checks_pass)  //  && _vehicle_status.nav_state == px4_msgs::msg::VehicleStatus::NAVIGATION_STATE_AUTO_LOITER
-            {
+            // Check if pre-flight checks have passed before switching to offboard.
+            if (_vehicle_status.pre_flight_checks_pass) {
                 // Switch to offboard after 2 seconds
                 if (isStateTimeout(2.0)) {
                     _home_setpoint[0] = _local_position.x;

@@ -74,7 +74,4 @@ class OffboardDemo : public rclcpp::Node {
     std::string _topic_prefix;
     std::string _vehicle_namespace;
     int _vehicle_id;
-
-    float _takeoff_altitude;
-    float _hover_duration;
 };

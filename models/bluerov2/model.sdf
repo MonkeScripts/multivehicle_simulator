@@ -311,7 +311,7 @@
     <plugin
         filename="gz-sim-thruster-system"
         name="gz::sim::systems::Thruster">
-      <namespace>bluerov2</namespace>
+      <namespace>bluerov</namespace>
       <joint_name>thruster1_joint</joint_name>
       <thrust_coefficient>0.02</thrust_coefficient>
       <fluid_density>998.0</fluid_density>
@@ -323,7 +323,7 @@
     <plugin
         filename="gz-sim-thruster-system"
         name="gz::sim::systems::Thruster">
-      <namespace>bluerov2</namespace>
+      <namespace>bluerov</namespace>
       <joint_name>thruster2_joint</joint_name>
       <thrust_coefficient>0.02</thrust_coefficient>
       <fluid_density>998.0</fluid_density>
@@ -335,7 +335,7 @@
     <plugin
         filename="gz-sim-thruster-system"
         name="gz::sim::systems::Thruster">
-      <namespace>bluerov2</namespace>
+      <namespace>bluerov</namespace>
       <joint_name>thruster3_joint</joint_name>
       <!-- Reverse spin to balance torque -->
       <thrust_coefficient>-0.02</thrust_coefficient>
@@ -348,7 +348,7 @@
     <plugin
         filename="gz-sim-thruster-system"
         name="gz::sim::systems::Thruster">
-      <namespace>bluerov2</namespace>
+      <namespace>bluerov</namespace>
       <joint_name>thruster4_joint</joint_name>
       <!-- Reverse spin to balance torque -->
       <thrust_coefficient>-0.02</thrust_coefficient>
@@ -361,7 +361,7 @@
     <plugin
         filename="gz-sim-thruster-system"
         name="gz::sim::systems::Thruster">
-      <namespace>bluerov2</namespace>
+      <namespace>bluerov</namespace>
       <joint_name>thruster5_joint</joint_name>
       <thrust_coefficient>0.02</thrust_coefficient>
       <fluid_density>998.0</fluid_density>
@@ -373,7 +373,7 @@
     <plugin
         filename="gz-sim-thruster-system"
         name="gz::sim::systems::Thruster">
-      <namespace>bluerov2</namespace>
+      <namespace>bluerov</namespace>
       <joint_name>thruster6_joint</joint_name>
       <!-- Reverse spin to balance torque -->
       <thrust_coefficient>-0.02</thrust_coefficient>
@@ -407,7 +407,7 @@
         <servo_min>1100</servo_min>
         <servo_max>1900</servo_max>
         <type>COMMAND</type>
-        <cmd_topic>/model/bluerov2/joint/thruster1_joint/cmd_thrust</cmd_topic>
+        <cmd_topic>/model/bluerov/joint/thruster1_joint/cmd_thrust</cmd_topic>
         <offset>-0.5</offset>
         <multiplier>100</multiplier>
       </control>
@@ -416,7 +416,7 @@
         <servo_min>1100</servo_min>
         <servo_max>1900</servo_max>
         <type>COMMAND</type>
-        <cmd_topic>/model/bluerov2/joint/thruster2_joint/cmd_thrust</cmd_topic>
+        <cmd_topic>/model/bluerov/joint/thruster2_joint/cmd_thrust</cmd_topic>
         <offset>-0.5</offset>
         <multiplier>100</multiplier>
       </control>
@@ -425,7 +425,7 @@
         <servo_min>1100</servo_min>
         <servo_max>1900</servo_max>
         <type>COMMAND</type>
-        <cmd_topic>/model/bluerov2/joint/thruster3_joint/cmd_thrust</cmd_topic>
+        <cmd_topic>/model/bluerov/joint/thruster3_joint/cmd_thrust</cmd_topic>
         <offset>-0.5</offset>
         <multiplier>100</multiplier>
       </control>
@@ -434,7 +434,7 @@
         <servo_min>1100</servo_min>
         <servo_max>1900</servo_max>
         <type>COMMAND</type>
-        <cmd_topic>/model/bluerov2/joint/thruster4_joint/cmd_thrust</cmd_topic>
+        <cmd_topic>/model/bluerov/joint/thruster4_joint/cmd_thrust</cmd_topic>
         <offset>-0.5</offset>
         <multiplier>100</multiplier>
       </control>
@@ -443,7 +443,7 @@
         <servo_min>1100</servo_min>
         <servo_max>1900</servo_max>
         <type>COMMAND</type>
-        <cmd_topic>/model/bluerov2/joint/thruster5_joint/cmd_thrust</cmd_topic>
+        <cmd_topic>/model/bluerov/joint/thruster5_joint/cmd_thrust</cmd_topic>
         <offset>-0.5</offset>
         <multiplier>100</multiplier>
       </control>
@@ -452,7 +452,7 @@
         <servo_min>1100</servo_min>
         <servo_max>1900</servo_max>
         <type>COMMAND</type>
-        <cmd_topic>/model/bluerov2/joint/thruster6_joint/cmd_thrust</cmd_topic>
+        <cmd_topic>/model/bluerov/joint/thruster6_joint/cmd_thrust</cmd_topic>
         <offset>-0.5</offset>
         <multiplier>100</multiplier>
       </control>

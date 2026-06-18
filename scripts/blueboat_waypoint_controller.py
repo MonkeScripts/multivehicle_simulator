@@ -75,7 +75,7 @@ class BlueBoatWaypointController(Node):
     def __init__(self):
         super().__init__("blueboat_waypoint_controller")
 
-        self.declare_parameter("delta_min", 2.0)  # m, min lookahead
+        self.declare_parameter("delta_min", 2.5)  # m, min lookahead
         self.declare_parameter("delta_max", 8.0)  # m, max lookahead
         self.declare_parameter("k_delta", 1.0)  # lookahead growth per |e|
         self.declare_parameter("acceptance_radius", 0.2)  # m, leg-done radius
@@ -85,19 +85,19 @@ class BlueBoatWaypointController(Node):
         # --- Turn-in-place / station-keeping gait ----------------------------
         self.declare_parameter("turn_in_place", True)  # stop+rotate at each wp
         self.declare_parameter("arrival_radius", 0.6)  # m, DRIVE->ALIGN switch
-        self.declare_parameter("align_tol_deg", 8.0)  # deg, heading-aligned exit
-        self.declare_parameter("align_settle_degps", 15.0)  # deg/s, settled exit
+        self.declare_parameter("align_tol_deg", 3.0)  # deg, heading-aligned exit
+        self.declare_parameter("align_settle_degps", 5.0)  # deg/s, settled exit
         self.declare_parameter("kp_pos", 0.7)  # (m/s)/m, station-keep surge gain
         self.declare_parameter("u_align_max", 0.5)  # m/s, station-keep surge clamp
         self.declare_parameter("repoint_radius", 1.0)  # m, HOLD: drive back if drift>this
         self.declare_parameter("v_settle", 0.1)  # m/s, stop before turning in place
         # --- Heading PID (outputs desired yaw rate, rad/s) -------------------
-        self.declare_parameter("kp_yaw", 1.2)
+        self.declare_parameter("kp_yaw", 2.0)
         self.declare_parameter("ki_yaw", 0.0)
-        self.declare_parameter("kd_yaw", 0.3)
+        self.declare_parameter("kd_yaw", 0.5)
         self.declare_parameter("w_max", 1.0)  # rad/s output clamp
         self.declare_parameter("i_max", 0.5)  # integrator clamp (rad/s)
-        self.declare_parameter("control_rate_hz", 10.0)
+        self.declare_parameter("control_rate_hz", 20.0)
 
         self.declare_parameter("odom_topic", "/blueboat/odom")
         self.declare_parameter("cmd_vel_topic", "/blueboat/cmd_vel")
