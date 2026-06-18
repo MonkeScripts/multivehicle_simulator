@@ -1,27 +1,16 @@
 #!/usr/bin/env bash
 
 #
-# Copyright (C) 2018 Open Source Robotics Foundation
+# Build the mvsim Docker image (Gazebo Harmonic + prebuilt PX4 & ArduSub).
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-#
-
-# Builds a Docker image.
 # Usage: ./build.bash [dockerfile_dir] [tag]
 #   dockerfile_dir  directory containing the Dockerfile (default: mvsim)
 #   tag             image tag (default: humble)
-# Produces  mvsim:<tag>  and  mvsim:<timestamp>.
+# Tags the build as both mvsim:<tag> and mvsim:<timestamp>.
+#
+# SPDX-License-Identifier: Apache-2.0
+# Adapted from OSRF dockwater (Apache-2.0), Copyright (C) 2018 Open Source
+# Robotics Foundation; modified for multivehicle_sim by MonkeScripts.
 image_name=mvsim
 dockerfile_dir=${1:-mvsim}
 distro=${2:-humble}
