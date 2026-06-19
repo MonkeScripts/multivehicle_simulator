@@ -388,7 +388,12 @@
       <fdm_addr>127.0.0.1</fdm_addr>
       <fdm_port_in>9002</fdm_port_in>
       <connectionTimeoutMaxCount>5</connectionTimeoutMaxCount>
-      <lock_step>1</lock_step>
+      <!-- lock_step=0: do not block Gazebo on the ArduSub FDM round-trip each
+           physics step. Restores RTF under the full stack (blocking lock-step
+           stalls the sim loop ~1000x/s). Trade-off: autopilot timing is no
+           longer cycle-accurate / bit-for-bit repeatable. See the website docs
+           page "Lock-step & real-time factor". -->
+      <lock_step>0</lock_step>
 
       <!-- Transform from the Gazebo body frame (x-forward, y-left, z-up)
            to the ArduPilot body frame (x-forward, y-right, z-down) -->

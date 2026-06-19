@@ -25,24 +25,24 @@
       <pose>0 0 0.15 0 0 0</pose>
       <collision name='buoy_collision'>
         <geometry>
-          <cylinder><radius>0.225</radius><length>0.30</length></cylinder>
+          <box><size>0.45 0.45 0.3</size></box>
         </geometry>
       </collision>
-      <visual name='buoy_visual'>
-        <geometry>
-          <cylinder><radius>0.225</radius><length>0.30</length></cylinder>
-        </geometry>
-        <material>
-          <ambient>0.8 0.35 0.05 1</ambient>
-          <diffuse>1.0 0.45 0.08 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-        </material>
+      <visual name='buoy_base_visual'>
+         <pose> 0 0 0.15 0 0 0 </pose>
+            <geometry>
+                <mesh>
+
+                <uri>model://robotx26/safe_passage_buoy/buoy_vis.glb</uri>
+                </mesh>
+
+            </geometry>
       </visual>
 
       <!-- BULB: sphere on top, emissive driven by the plugin. Visible from the
            side (ASV) and above (UAV). Default material is dark; the plugin
            overwrites ambient/diffuse/specular/emissive per mode. -->
-      <visual name='bulb_visual'>
+      <!-- <visual name='bulb_visual'>
         <pose>0 0 0.25 0 0 0</pose>
         <geometry>
           <sphere><radius>0.08</radius></sphere>
@@ -54,7 +54,25 @@
           <emissive>0 0 0 1</emissive>
         </material>
       </visual>
+    </link> -->
+
+    <visual name='bulb_visual'>
+        <pose>0 0 0.25 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.064</radius>
+            <length>0.12906</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.02 0.02 0.02 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+      </visual>
     </link>
+    
 
     <!-- LED system plugin. Drives bulb_visual's emissive colour per mode. -->
     <plugin filename="libgz_led_plugin.so" name="gz::sim::systems::LedPlugin">

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version='1.9'>
+  <model name='bounded_dock'>
+    <static>true</static>
+    <pose>0 0 0 0 0 0</pose>
+
+    <link name='docking_link'>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>5500.7075582190346</mass>
+        <inertia>
+          <ixx>240.61530446574389</ixx>
+          <ixy>0.093579675196458503</ixy>
+          <ixz>7.4520018571842047e-05</ixz>
+          <iyy>227.7390639361879</iyy>
+          <iyz>0.00144094006270884</iyz>
+          <izz>232.86831224580979</izz>
+        </inertia>
+      </inertial>
+
+      <!-- Primitive box collisions replacing the 2 MB triangle-mesh collision
+           (the visual below still uses the full .glb). Derived from the mesh's
+           own vertices: a back beam plus 4 forward "fingers", leaving the 3
+           docking bays (between fingers, centred on the 3 docking_led poses
+           y=0/-2.038/-4.068) collision-free so the boat can drive in. Poses are
+           in the link frame with the mesh's +90 deg X-roll already baked in. -->
+      <collision name='dock_back_beam'>
+        <pose>-0.244 -2.032 -0.255 0 0 0</pose>
+        <geometry><box><size>1.133 6.700 0.514</size></box></geometry>
+      </collision>
+      <collision name='dock_finger_1'>
+        <pose>1.317 1.016 -0.255 0 0 0</pose>
+        <geometry><box><size>2.034 0.604 0.514</size></box></geometry>
+      </collision>
+      <collision name='dock_finger_2'>
+        <pose>1.317 -1.016 -0.255 0 0 0</pose>
+        <geometry><box><size>2.034 0.604 0.514</size></box></geometry>
+      </collision>
+      <collision name='dock_finger_3'>
+        <pose>1.317 -3.048 -0.255 0 0 0</pose>
+        <geometry><box><size>2.034 0.604 0.514</size></box></geometry>
+      </collision>
+      <collision name='dock_finger_4'>
+        <pose>1.317 -5.080 -0.255 0 0 0</pose>
+        <geometry><box><size>2.034 0.604 0.514</size></box></geometry>
+      </collision>
+
+      <visual name='docking_link_visual'>
+        <pose>0 0 0 1.5708 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robotx26/docking_task/docking_station_bounded/docking_station_bounded.glb</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <include>
+      <name>docking_led_left</name>
+      <uri>model://robotx26/docking_led</uri>
+      <pose> 0 -4.068 0.06453 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>docking_led_middle</name>
+      <uri>model://robotx26/docking_led</uri>
+      <pose>0 -2.038 0.06453 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>docking_led_right</name>
+      <uri>model://robotx26/docking_led</uri>
+      <pose>0 0 0.06453 0 0 0</pose>
+    </include>
+
+  </model>
+</sdf>

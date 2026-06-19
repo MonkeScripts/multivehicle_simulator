@@ -13,7 +13,9 @@
 #   5) dashboard  — web backend (:8080) + sim-side LED/incident nodes
 #   6) debug      — free shell for ros2 topic/echo/service introspection
 #
-# Adjust WS_DIR below if your workspace isn't mounted at /root/HOST/dave_ws.
+# Workspace dir defaults to /root/HOST/dave_ws. If your workspace is named
+# something else, export WS_DIR before loading, e.g.:
+#   WS_DIR=/root/HOST/my_ws tmuxp load .../mvsim_debug.yaml
 
 session_name: mvsim
 
@@ -24,9 +26,11 @@ global_options:
 
 # Sourced in every pane before its pre-typed command.
 shell_command_before:
+  # Workspace dir — override by exporting WS_DIR before `tmuxp load`.
+  - 'WS_DIR="${WS_DIR:-/root/HOST/dave_ws}"'
   - source /opt/ros/humble/setup.bash
-  - "[ -f /root/HOST/dave_ws/install/setup.bash ] && source /root/HOST/dave_ws/install/setup.bash"
-  - cd /root/HOST/dave_ws
+  - '[ -f "$WS_DIR/install/setup.bash" ] && source "$WS_DIR/install/setup.bash"'
+  - cd "$WS_DIR"
 
 windows:
   # 1. Gazebo world (start this first).

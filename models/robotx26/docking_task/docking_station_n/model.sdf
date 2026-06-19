@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version='1.9'>
+  <model name='dock_station_n'>
+    <static>true</static>
+    <pose>0 0 0 0 0 0</pose>
+
+    <link name='docking_link'>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>5500.7075582190346</mass>
+        <inertia>
+          <ixx>240.61530446574389</ixx>
+          <ixy>0.093579675196458503</ixy>
+          <ixz>7.4520018571842047e-05</ixz>
+          <iyy>227.7390639361879</iyy>
+          <iyz>0.00144094006270884</iyz>
+          <izz>232.86831224580979</izz>
+        </inertia>
+      </inertial>
+
+      <collision name='docking_link_collision'>
+        <pose>0 0 0 1.5708 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robotx26/docking_task/docking_station_n/docking_station_n.glb</uri>
+          </mesh>
+        </geometry>
+      </collision>
+
+      <visual name='docking_link_visual'>
+        <pose>0 0 0 1.5708 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robotx26/docking_task/docking_station_n/docking_station_n.glb</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <include>
+      <name>docking_led_left</name>
+      <uri>model://robotx26/docking_led</uri>
+      <pose> 0 -4.068 0.06453 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>docking_led_middle</name>
+      <uri>model://robotx26/docking_led</uri>
+      <pose>0 -2.038 0.06453 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>docking_led_right</name>
+      <uri>model://robotx26/docking_led</uri>
+      <pose>0 0 0.06453 0 0 0</pose>
+    </include>
+
+  </model>
+</sdf>

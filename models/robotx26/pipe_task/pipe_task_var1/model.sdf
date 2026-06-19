@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version='1.9'>
+
+  <model name='pipe_model'>
+    <static>1</static>
+    <link name='pipe_base_link'>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>235.4152162093547</mass>
+        <inertia>
+          <ixx>533.8067881323725</ixx>
+          <ixy>1.5948978886996961e-13</ixy>
+          <ixz>-444.4643834093107</ixz>
+          <iyy>1033.1685999307199</iyy>
+          <iyz>2.3032939573935558e-13</iyz>
+          <izz>504.90262862240178</izz>
+        </inertia>
+      </inertial>
+     
+      <collision name='pipe_base_link_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>5 1 3</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name='pipe_base_visual'>
+         <pose> 0 0 0 0 0 0 </pose>
+            <geometry>
+            <mesh>
+
+            <uri>model://robotx26/pipe_task/pipe_task_var1/meshes/pipe2_var1.glb</uri>
+            </mesh>
+
+            </geometry>
+      </visual>
+
+
+    </link>
+
+
+
+    <include>
+      <name>pipe_led_1</name>
+      <uri>model://robotx26/pipe_led</uri>
+      <pose>-0.85 0.2 0.1 1.57079 0 1.57079</pose>
+
+    </include>
+
+    <include>
+      <name>pipe_led_2</name>
+      <uri>model://robotx26/pipe_led</uri>
+      <pose>-2.2272 0.4422 0.1 1.57079 0 1.5709</pose>
+
+    </include>
+
+    <include>
+      <name>pipe_led_3</name>
+      <uri>model://robotx26/pipe_led</uri>
+      <pose>-2.58695 1.93695 0.1 1.57079 0 1.57079</pose>
+
+    </include>
+
+    <include>
+      <name>pipe_led_4</name>
+      <uri>model://robotx26/pipe_led</uri>
+      <pose>-2.90117 3.45067 0.1 1.57079 0 1.57079</pose>
+
+    </include>
+
+    <include>
+      <name>pipe_led_5</name>
+      <uri>model://robotx26/pipe_led</uri>
+      <pose>-4.323 3.67389 0.1 1.57079 0 1.57079</pose>
+
+    </include>
+
+
+
+    
+
+
+
+  </model>
+</sdf>

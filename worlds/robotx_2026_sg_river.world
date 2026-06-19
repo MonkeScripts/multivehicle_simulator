@@ -349,15 +349,15 @@
     <!-- led change is done by ros2 service call on /robotx/docking_led/choice. rgr represents red, green, red etc -->
     <include>
       <name>docking_task</name>
-      <uri>model://robotx26/docking_task</uri>
-      <pose>20.134 -403.723 0 0 0 0</pose>
+      <uri>model://robotx26/docking_task/docking_station_bounded</uri>
+      <pose>20.134 -403.723 0.5 0 0 0</pose>
     </include>
 
     <!-- Underwater pipe task (RobotX 2026). Pose is world-relative. -->
     <include>
       <name>pipe_task</name>
-      <uri>model://robotx26/pipe_task</uri>
-      <pose>62 -414.723 -2 0 0 -1.21</pose>
+      <uri>model://robotx26/pipe_task/pipe_task_var1</uri>
+      <pose>60.173 -409.882 -0.526 -1.5708 0 1.93159</pose>
     </include>
 
     <!-- Pipe-task start/end buoys -->
@@ -367,20 +367,16 @@
       <link name='buoy_base'>
         <pose>0 0 0.15 0 0 0</pose>
         <collision name='buoy_collision'>
-          <geometry><cylinder><radius>0.225</radius><length>0.30</length></cylinder></geometry>
+          <geometry><box><size>0.45 0.45 0.3</size></box></geometry>
         </collision>
-        <visual name='buoy_visual'>
-          <geometry><cylinder><radius>0.225</radius><length>0.30</length></cylinder></geometry>
-          <material>
-            <ambient>0.8 0.35 0.05 1</ambient>
-            <diffuse>1.0 0.45 0.08 1</diffuse>
-            <specular>0.1 0.1 0.1 1</specular>
-          </material>
+        <visual name='buoy_base_visual'>
+          <pose>0 0 0.15 0 0 0</pose>
+          <geometry><mesh><uri>model://robotx26/safe_passage_buoy/buoy_vis.glb</uri></mesh></geometry>
         </visual>
-        <!-- Red LED bulb (emissive = self-lit, visible from ASV side + UAV top). -->
+        <!-- Red LED bulb (static, self-lit): fixed port gate marker, not dashboard-driven. -->
         <visual name='bulb_visual'>
           <pose>0 0 0.25 0 0 0</pose>
-          <geometry><sphere><radius>0.08</radius></sphere></geometry>
+          <geometry><cylinder><radius>0.064</radius><length>0.12906</length></cylinder></geometry>
           <material>
             <ambient>0.3 0.0 0.0 1</ambient>
             <diffuse>1.0 0.0 0.0 1</diffuse>
@@ -397,20 +393,16 @@
       <link name='buoy_base'>
         <pose>0 0 0.15 0 0 0</pose>
         <collision name='buoy_collision'>
-          <geometry><cylinder><radius>0.225</radius><length>0.30</length></cylinder></geometry>
+          <geometry><box><size>0.45 0.45 0.3</size></box></geometry>
         </collision>
-        <visual name='buoy_visual'>
-          <geometry><cylinder><radius>0.225</radius><length>0.30</length></cylinder></geometry>
-          <material>
-            <ambient>0.8 0.35 0.05 1</ambient>
-            <diffuse>1.0 0.45 0.08 1</diffuse>
-            <specular>0.1 0.1 0.1 1</specular>
-          </material>
+        <visual name='buoy_base_visual'>
+          <pose>0 0 0.15 0 0 0</pose>
+          <geometry><mesh><uri>model://robotx26/safe_passage_buoy/buoy_vis.glb</uri></mesh></geometry>
         </visual>
-        <!-- Green LED bulb. -->
+        <!-- Green LED bulb (static, self-lit): fixed starboard gate marker, not dashboard-driven. -->
         <visual name='bulb_visual'>
           <pose>0 0 0.25 0 0 0</pose>
-          <geometry><sphere><radius>0.08</radius></sphere></geometry>
+          <geometry><cylinder><radius>0.064</radius><length>0.12906</length></cylinder></geometry>
           <material>
             <ambient>0.0 0.3 0.0 1</ambient>
             <diffuse>0.0 1.0 0.0 1</diffuse>
